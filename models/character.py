@@ -88,11 +88,8 @@ class Character:
     inventory: List[InventoryItem] = field(default_factory=list)
 
     @staticmethod
-    def from_dict(data: Dict) -> 'Character':
-        inventory_items = [
-            InventoryItem(**item)
-            for item in data.get("inventory", [])
-        ]
+    def from_dict(data: Dict) -> "Character":
+        inventory_items = [InventoryItem(**item) for item in data.get("inventory", [])]
 
         character_data = {
             key: value
@@ -157,44 +154,37 @@ class Character:
         return target_monster
 
     def find_best_craft(self, skill: AnyStr, items: AllItems):
-        filtered_items = items.filter(
-            craft_skill=skill
-        )
+        filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
-            if self.can_craft_without_attacker(
-                code=item.code,
-                items=items
-            ):
+            if self.can_craft_without_attacker(code=item.code, items=items):
                 best_item = item
                 break
 
         for item in filtered_items:
-            if self.can_craft_without_attacker(
-                code=item.code,
-                items=items
-            ):
+            if self.can_craft_without_attacker(code=item.code, items=items):
                 if item.level > best_item.level:
                     best_item = item
 
         return best_item
 
-    def find_best_craft_for_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters):
-        filtered_items = items.filter(
-            craft_skill=skill
-        )
+    def find_best_craft_for_attacker(
+        self,
+        skill: AnyStr,
+        attacker: "Character",
+        items: AllItems,
+        monsters: AllMonsters,
+    ):
+        filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
             if self.can_craft(
-                code=item.code,
-                attacker=attacker,
-                items=items,
-                monsters=monsters
+                code=item.code, attacker=attacker, items=items, monsters=monsters
             ):
-                if attacker.get_slot_item(
-                    slot=item.type,
-                    items=items
-                ).level < item.level:
+                if (
+                    attacker.get_slot_item(slot=item.type, items=items).level
+                    < item.level
+                ):
                     return item
 
     def can_beat(self, monster: Monster):
@@ -203,10 +193,24 @@ class Character:
 
         for _ in range(50):
             # player
-            player_attack = self.attack_air * (1 + self.dmg_air / 100) * (1 - monster.res_air / 100)
-            player_attack += self.attack_earth * (1 + self.dmg_earth / 100) * (1 - monster.res_earth / 100)
-            player_attack += self.attack_fire * (1 + self.dmg_fire / 100) * (1 - monster.res_fire / 100)
-            player_attack += self.attack_water * (1 + self.dmg_water / 100) * (1 - monster.res_water / 100)
+            player_attack = (
+                self.attack_air * (1 + self.dmg_air / 100) * (1 - monster.res_air / 100)
+            )
+            player_attack += (
+                self.attack_earth
+                * (1 + self.dmg_earth / 100)
+                * (1 - monster.res_earth / 100)
+            )
+            player_attack += (
+                self.attack_fire
+                * (1 + self.dmg_fire / 100)
+                * (1 - monster.res_fire / 100)
+            )
+            player_attack += (
+                self.attack_water
+                * (1 + self.dmg_water / 100)
+                * (1 - monster.res_water / 100)
+            )
 
             mobs_hp -= player_attack
 
@@ -234,7 +238,13 @@ class Character:
         monster = monsters.get_drops(drop=code)
         return self.can_beat(monster)
 
-    def can_craft(self, code: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters) -> bool:
+    def can_craft(
+        self,
+        code: AnyStr,
+        attacker: "Character",
+        items: AllItems,
+        monsters: AllMonsters,
+    ) -> bool:
         item = items.get_one(code=code)
 
         if item.craft is None:
@@ -252,7 +262,7 @@ class Character:
                     code=child_item.code,
                     attacker=attacker,
                     items=items,
-                    monsters=monsters
+                    monsters=monsters,
                 )
                 can_craft_children = can_craft_children and can_craft_child
 
@@ -273,8 +283,7 @@ class Character:
             can_craft_children = True
             for child_item in item.craft.items:
                 can_craft_child = self.can_craft_without_attacker(
-                    code=child_item.code,
-                    items=items
+                    code=child_item.code, items=items
                 )
                 can_craft_children = can_craft_children and can_craft_child
 

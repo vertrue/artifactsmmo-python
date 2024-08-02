@@ -11,14 +11,13 @@ config = dotenv_values(".env")
 
 def cooldown():
     def decorator(function):
-        def wrapper(self: 'BaseAPI', *args, **kwargs):
+        def wrapper(self: "BaseAPI", *args, **kwargs):
             response_code, response_data = function(self, *args, **kwargs)
             if response_code == 200 or not self.cooldown_expires:
                 return response_code, response_data
 
             expires = datetime.strptime(
-                self.cooldown_expires,
-                "%Y-%m-%dT%H:%M:%S.%fZ"
+                self.cooldown_expires, "%Y-%m-%dT%H:%M:%S.%fZ"
             ).replace(tzinfo=timezone.utc)
             now = datetime.now(timezone.utc)
             sleep_duration = (expires - now).total_seconds()
@@ -28,7 +27,9 @@ def cooldown():
                 sleep(sleep_duration)
 
             return function(self, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -39,7 +40,7 @@ class BaseAPI:
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.token}"
+            "Authorization": f"Bearer {self.token}",
         }
         self.token = self.token
         self.cooldown_expires = None
@@ -49,10 +50,7 @@ class BaseAPI:
         url = self.host + method
 
         response = requests.post(
-            url,
-            headers=self.headers,
-            data=json.dumps(body),
-            verify=False
+            url, headers=self.headers, data=json.dumps(body), verify=False
         )
 
         response_code = response.status_code
@@ -67,12 +65,7 @@ class BaseAPI:
     @cooldown()
     def get(self, method: AnyStr, params: Dict = {}) -> Tuple[Dict, int]:
         url = self.host + method
-        response = requests.get(
-            url,
-            headers=self.headers,
-            params=params,
-            verify=False
-        )
+        response = requests.get(url, headers=self.headers, params=params, verify=False)
 
         response_code = response.status_code
         response_body = json.loads(response.text)
@@ -82,10 +75,7 @@ class BaseAPI:
 
     # @cooldown()
     def get_all(self, method: AnyStr, params: Dict = {}):
-        params = {
-            "page": 1,
-            "size": 100
-        }
+        params = {"page": 1, "size": 100}
 
         all_data = []
 
@@ -94,10 +84,7 @@ class BaseAPI:
         total_pages = response["pages"]
 
         for i in range(1, total_pages + 1):
-            params = {
-                "page": i,
-                "size": 100
-            }
+            params = {"page": i, "size": 100}
             _, response = self.get(method=method, params=params)
             all_data += response["data"]
 

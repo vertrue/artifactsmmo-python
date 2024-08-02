@@ -7,17 +7,14 @@ from interfaces import (
     monsters,
     maps,
     items,
-    resources
+    resources,
 )
 from controller.attacker import Attacker
 from controller.crafter import Crafter
 from controller.cooker import Cooker
 
 attacker = Attacker(
-    character=attacker_character,
-    monsters=monsters,
-    maps=maps,
-    items=items
+    character=attacker_character, monsters=monsters, maps=maps, items=items
 )
 
 gearcrafter = Crafter(
@@ -27,7 +24,7 @@ gearcrafter = Crafter(
     items=items,
     resources=resources,
     craft_skill="gearcrafting",
-    attacker=attacker
+    attacker=attacker,
 )
 
 weaponcrafter = Crafter(
@@ -37,7 +34,7 @@ weaponcrafter = Crafter(
     items=items,
     resources=resources,
     craft_skill="weaponcrafting",
-    attacker=attacker
+    attacker=attacker,
 )
 
 jewelrycrafter = Crafter(
@@ -47,7 +44,7 @@ jewelrycrafter = Crafter(
     items=items,
     resources=resources,
     craft_skill="jewelrycrafting",
-    attacker=attacker
+    attacker=attacker,
 )
 
 coocker = Cooker(
@@ -57,5 +54,5 @@ coocker = Cooker(
     items=items,
     resources=resources,
     craft_skill="cooking",
-    attacker=attacker
+    attacker=attacker,
 )

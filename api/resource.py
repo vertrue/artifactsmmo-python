@@ -8,7 +8,5 @@ class ResourceAPI(BaseAPI):
         super().__init__()
 
     def get_all_resources(self) -> AllResources:
-        all_data = self.get_all(
-            method="/resources"
-        )
+        all_data = self.get_all(method="/resources")
         return AllResources(resources=all_data)

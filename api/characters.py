@@ -14,7 +14,5 @@ class MyCharactersAPI(BaseAPI):
 
         all_characters = []
         for character in response["data"]:
-            all_characters.append(
-                Character.from_dict(character)
-            )
+            all_characters.append(Character.from_dict(character))
         return all_characters

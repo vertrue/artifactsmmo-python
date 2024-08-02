@@ -22,11 +22,7 @@ class FarmResources:
 
     def add(self, code: AnyStr, quantity: int) -> None:
         self.resources.append(
-            MonsterResource(
-                code=code,
-                quantity=quantity,
-                monsters=self.monsters
-            )
+            MonsterResource(code=code, quantity=quantity, monsters=self.monsters)
         )
 
     def get(self) -> MonsterResource | None:
@@ -45,11 +41,12 @@ class FarmResources:
 
 class Attacker:
     def __init__(
-            self,
-            character: MyCharacterAPI,
-            monsters: AllMonsters,
-            maps: AllMaps,
-            items: AllItems) -> None:
+        self,
+        character: MyCharacterAPI,
+        monsters: AllMonsters,
+        maps: AllMaps,
+        items: AllItems,
+    ) -> None:
         self.character = character
         self.monsters = monsters
         self.maps = maps
@@ -57,8 +54,7 @@ class Attacker:
 
         self.bank = BankAPI()
         self.bank_map = self.bank.get_map(
-            character=self.character.character,
-            maps=self.maps
+            character=self.character.character, maps=self.maps
         )
 
         self.farm_queue = FarmResources(monsters=self.monsters)
@@ -81,9 +77,7 @@ class Attacker:
             return self.farm_xp
 
     def add_farm_resource(self, code: AnyStr, quantity: int):
-        current_quantity = self.character.character.get_resource_quantity(
-            code=code
-        )
+        current_quantity = self.character.character.get_resource_quantity(code=code)
         monster = self.monsters.get_drops(drop=code)
         if not self.character.character.can_beat(monster):
             return False
@@ -93,10 +87,7 @@ class Attacker:
             self.character.deposit_all()
         else:
             diff_quantity = quantity - current_quantity
-            self.farm_queue.add(
-                code=code,
-                quantity=diff_quantity
-            )
+            self.farm_queue.add(code=code, quantity=diff_quantity)
         return True
 
     def farm_resource(self):
@@ -107,8 +98,7 @@ class Attacker:
         )
 
         closest_monster = self.maps.closest(
-            character=self.character.character,
-            content_code=resource.monster.code
+            character=self.character.character, content_code=resource.monster.code
         )
 
         self.character.move(target=closest_monster)
@@ -126,7 +116,9 @@ class Attacker:
                 self.character.deposit_all()
 
     def farm_xp(self):
-        print(f"{self.character.character.name} is farming xp {self.farm_xp_iter} times...")
+        print(
+            f"{self.character.character.name} is farming xp {self.farm_xp_iter} times..."
+        )
         if self.farm_xp_iter % 10 == 0:
             self.check_better_equipment()
             self.character.move(target=self.bank_map)
@@ -135,8 +127,7 @@ class Attacker:
             monsters=self.monsters
         )
         closest_monster = self.maps.closest(
-            character=self.character.character,
-            content_code=best_monster.code
+            character=self.character.character, content_code=best_monster.code
         )
 
         self.character.move(target=closest_monster)
@@ -151,8 +142,7 @@ class Attacker:
         for item in bank_items:
             bank_item = self.items.get_one(code=item.code)
             character_item = self.character.character.get_slot_item(
-                slot=bank_item.type,
-                items=self.items
+                slot=bank_item.type, items=self.items
             )
 
             if self.character.character.get_slot(slot=bank_item.type) is None:
@@ -161,22 +151,14 @@ class Attacker:
             if character_item is None:
                 self.character.move(target=self.bank_map)
                 self.character.withdraw(code=bank_item.code)
-                self.character.equip(
-                    code=bank_item.code,
-                    slot=bank_item.type
-                )
+                self.character.equip(code=bank_item.code, slot=bank_item.type)
             elif bank_item.level > character_item.level:
                 if bank_item.level > self.character.character.level:
                     continue
                 self.character.move(target=self.bank_map)
                 self.character.withdraw(code=bank_item.code)
-                self.character.unequip(
-                    slot=bank_item.type
-                )
-                self.character.equip(
-                    code=bank_item.code,
-                    slot=bank_item.type
-                )
+                self.character.unequip(slot=bank_item.type)
+                self.character.equip(code=bank_item.code, slot=bank_item.type)
 
     @property
     def has_farm_resources(self):

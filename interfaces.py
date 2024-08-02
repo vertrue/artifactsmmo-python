@@ -23,18 +23,8 @@ bank = BankAPI()
 
 characters_api = MyCharactersAPI()
 
-attacker_character = MyCharacterAPI(
-    character=characters_api.get_all()[0]
-)
-gearcrafter_character = MyCharacterAPI(
-    character=characters_api.get_all()[1]
-)
-weaponcrafter_character = MyCharacterAPI(
-    character=characters_api.get_all()[3]
-)
-jewelrycrafter_character = MyCharacterAPI(
-    character=characters_api.get_all()[4]
-)
-coocker_character = MyCharacterAPI(
-    character=characters_api.get_all()[2]
-)
+attacker_character = MyCharacterAPI(character=characters_api.get_all()[0])
+gearcrafter_character = MyCharacterAPI(character=characters_api.get_all()[1])
+weaponcrafter_character = MyCharacterAPI(character=characters_api.get_all()[3])
+jewelrycrafter_character = MyCharacterAPI(character=characters_api.get_all()[4])
+coocker_character = MyCharacterAPI(character=characters_api.get_all()[2])

@@ -8,7 +8,5 @@ class MapAPI(BaseAPI):
         super().__init__()
 
     def get_all_maps(self) -> AllMaps:
-        all_data = self.get_all(
-            method="/maps"
-        )
+        all_data = self.get_all(method="/maps")
         return AllMaps(maps=all_data)

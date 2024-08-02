@@ -21,13 +21,7 @@ class MyCharacterAPI(MapAPI):
 
         print(f"{self.character.name} is moving to ({target.x}, {target.y})")
         method = f"/my/{self.character.name}/action/move"
-        self.post(
-                method=method,
-                body={
-                    "x": target.x,
-                    "y": target.y
-                }
-            )
+        self.post(method=method, body={"x": target.x, "y": target.y})
         self._update_character()
 
     def fight(self):
@@ -45,24 +39,14 @@ class MyCharacterAPI(MapAPI):
     def craft(self, code: AnyStr):
         method = f"/my/{self.character.name}/action/crafting"
 
-        self.post(
-            method=method,
-            body={
-                "code": code
-            }
-        )
+        self.post(method=method, body={"code": code})
 
         self._update_character()
 
     def unequip(self, slot: AnyStr) -> bool:
         method = f"/my/{self.character.name}/action/unequip"
 
-        response_code, response_data = self.post(
-            method=method,
-            body={
-                "slot": slot
-            }
-        )
+        response_code, response_data = self.post(method=method, body={"slot": slot})
 
         return response_code == 200
 
@@ -70,11 +54,7 @@ class MyCharacterAPI(MapAPI):
         method = f"/my/{self.character.name}/action/equip"
 
         response_code, response_data = self.post(
-            method=method,
-            body={
-                "slot": slot,
-                "code": code
-            }
+            method=method, body={"slot": slot, "code": code}
         )
 
         return response_code == 200
@@ -83,11 +63,7 @@ class MyCharacterAPI(MapAPI):
         method = f"/my/{self.character.name}/action/bank/deposit"
 
         response_code, response_data = self.post(
-            method=method,
-            body={
-                "quantity": quantity,
-                "code": code
-            }
+            method=method, body={"quantity": quantity, "code": code}
         )
         self._update_character()
 
@@ -97,11 +73,7 @@ class MyCharacterAPI(MapAPI):
         for item in self.character.inventory:
             if item.quantity > 0:
                 response_code, response_data = self.post(
-                    method=method,
-                    body={
-                        "quantity": item.quantity,
-                        "code": item.code
-                    }
+                    method=method, body={"quantity": item.quantity, "code": item.code}
                 )
         self._update_character()
 
@@ -109,11 +81,7 @@ class MyCharacterAPI(MapAPI):
         method = f"/my/{self.character.name}/action/bank/withdraw"
 
         response_code, response_data = self.post(
-            method=method,
-            body={
-                "quantity": quantity,
-                "code": code
-            }
+            method=method, body={"quantity": quantity, "code": code}
         )
         self._update_character()
 

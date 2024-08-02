@@ -29,39 +29,34 @@ class Monster:
     drops: List[Drop] = field(default_factory=list)
 
     @staticmethod
-    def from_dict(data: Dict) -> 'Monster':
-        drops = [Drop(**drop) for drop in data.get('drops', [])]
+    def from_dict(data: Dict) -> "Monster":
+        drops = [Drop(**drop) for drop in data.get("drops", [])]
         return Monster(
-            name=data.get('name', ''),
-            code=data.get('code', ''),
-            level=data.get('level', 0),
-            hp=data.get('hp', 0),
-            attack_fire=data.get('attack_fire', 0),
-            attack_earth=data.get('attack_earth', 0),
-            attack_water=data.get('attack_water', 0),
-            attack_air=data.get('attack_air', 0),
-            res_fire=data.get('res_fire', 0),
-            res_earth=data.get('res_earth', 0),
-            res_water=data.get('res_water', 0),
-            res_air=data.get('res_air', 0),
-            min_gold=data.get('min_gold', 0),
-            max_gold=data.get('max_gold', 0),
-            drops=drops
+            name=data.get("name", ""),
+            code=data.get("code", ""),
+            level=data.get("level", 0),
+            hp=data.get("hp", 0),
+            attack_fire=data.get("attack_fire", 0),
+            attack_earth=data.get("attack_earth", 0),
+            attack_water=data.get("attack_water", 0),
+            attack_air=data.get("attack_air", 0),
+            res_fire=data.get("res_fire", 0),
+            res_earth=data.get("res_earth", 0),
+            res_water=data.get("res_water", 0),
+            res_air=data.get("res_air", 0),
+            min_gold=data.get("min_gold", 0),
+            max_gold=data.get("max_gold", 0),
+            drops=drops,
         )
 
 
 class AllMonsters:
     def __init__(self, monsters: List[Dict]) -> None:
-        self.monsters = [
-            Monster.from_dict(monster)
-            for monster in monsters
-        ]
+        self.monsters = [Monster.from_dict(monster) for monster in monsters]
 
     def filter(
-            self,
-            drop: AnyStr = None,
-            max_level: int = None,
-            min_level: int = None) -> List[Monster]:
+        self, drop: AnyStr = None, max_level: int = None, min_level: int = None
+    ) -> List[Monster]:
 
         filtered_drop = []
         if drop:
@@ -91,9 +86,7 @@ class AllMonsters:
 
         return filtered_min_level
 
-    def get_drops(
-            self,
-            drop: AnyStr = None) -> Monster:
+    def get_drops(self, drop: AnyStr = None) -> Monster:
 
         filtered_drops = self.filter(drop=drop)
 

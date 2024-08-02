@@ -19,29 +19,24 @@ class Resource:
     drops: List[Drop] = field(default_factory=list)
 
     @staticmethod
-    def from_dict(data: Dict) -> 'Resource':
-        drops = [Drop(**drop) for drop in data.get('drops', [])]
+    def from_dict(data: Dict) -> "Resource":
+        drops = [Drop(**drop) for drop in data.get("drops", [])]
         return Resource(
-            name=data.get('name', ''),
-            code=data.get('code', ''),
-            skill=data.get('skill', ''),
-            level=data.get('level', 0),
-            drops=drops
+            name=data.get("name", ""),
+            code=data.get("code", ""),
+            skill=data.get("skill", ""),
+            level=data.get("level", 0),
+            drops=drops,
         )
 
 
 class AllResources:
     def __init__(self, resources: List[Dict]) -> None:
-        self.resources = [
-            Resource.from_dict(resource)
-            for resource in resources
-        ]
+        self.resources = [Resource.from_dict(resource) for resource in resources]
 
     def filter(
-            self,
-            drop: AnyStr = None,
-            max_level: int = None,
-            min_level: int = None) -> List[Resource]:
+        self, drop: AnyStr = None, max_level: int = None, min_level: int = None
+    ) -> List[Resource]:
 
         filtered_drop = []
         if drop:
@@ -71,9 +66,7 @@ class AllResources:
 
         return filtered_min_level
 
-    def get_drops(
-            self,
-            drop: AnyStr = None) -> Resource:
+    def get_drops(self, drop: AnyStr = None) -> Resource:
 
         filtered_drops = self.filter(drop=drop)
 

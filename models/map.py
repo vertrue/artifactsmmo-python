@@ -21,31 +21,29 @@ class Map:
     content: Optional[Content]
 
     @staticmethod
-    def from_dict(data: Dict) -> 'Map':
-        content_data = data.get('content')
+    def from_dict(data: Dict) -> "Map":
+        content_data = data.get("content")
         content = None
         if content_data:
             content = Content(
-                type=content_data.get('type', ''),
-                code=content_data.get('code', '')
+                type=content_data.get("type", ""), code=content_data.get("code", "")
             )
         return Map(
-            name=data.get('name', ''),
-            skin=data.get('skin', ''),
-            x=data.get('x', 0),
-            y=data.get('y', 0),
-            content=content
+            name=data.get("name", ""),
+            skin=data.get("skin", ""),
+            x=data.get("x", 0),
+            y=data.get("y", 0),
+            content=content,
         )
 
 
 class AllMaps:
     def __init__(self, maps: List[Dict]) -> None:
-        self.maps = [
-            Map.from_dict(map)
-            for map in maps
-        ]
+        self.maps = [Map.from_dict(map) for map in maps]
 
-    def filter(self, content_code: AnyStr = None, content_type: AnyStr = None) -> List[Map]:
+    def filter(
+        self, content_code: AnyStr = None, content_type: AnyStr = None
+    ) -> List[Map]:
 
         filtered_code = []
 
@@ -73,11 +71,13 @@ class AllMaps:
     def dist(inst1: Union[Character, Map], inst2: Union[Character, Map]):
         return abs(inst1.x - inst2.x) + abs(inst1.y - inst2.y)
 
-    def closest(self, character: Character, content_code: AnyStr = None, content_type: AnyStr = None):
-        filtered = self.filter(
-            content_code=content_code,
-            content_type=content_type
-        )
+    def closest(
+        self,
+        character: Character,
+        content_code: AnyStr = None,
+        content_type: AnyStr = None,
+    ):
+        filtered = self.filter(content_code=content_code, content_type=content_type)
 
         closest = filtered[0]
 

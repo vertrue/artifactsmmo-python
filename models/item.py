@@ -34,53 +34,47 @@ class Item:
     effects: List[Effect] = field(default_factory=list)
 
     @staticmethod
-    def from_dict(data: Dict) -> 'Item':
-        effects = [
-            Effect(**effect)
-            for effect in data.get('effects', [])
-        ]
+    def from_dict(data: Dict) -> "Item":
+        effects = [Effect(**effect) for effect in data.get("effects", [])]
         try:
             craft_items = [
-                CraftItem(**item)
-                for item in data.get('craft', {}).get('items', [])
+                CraftItem(**item) for item in data.get("craft", {}).get("items", [])
             ]
         except AttributeError:
             craft_items = None
 
         try:
             craft = Craft(
-                skill=data.get('craft', {}).get('skill', ''),
-                level=data.get('craft', {}).get('level', 0),
+                skill=data.get("craft", {}).get("skill", ""),
+                level=data.get("craft", {}).get("level", 0),
                 items=craft_items,
-                quantity=data.get('craft', {}).get('quantity', 0)
+                quantity=data.get("craft", {}).get("quantity", 0),
             )
         except AttributeError:
             craft = None
         return Item(
-            name=data.get('name', ''),
-            code=data.get('code', ''),
-            level=data.get('level', 1),
-            type=data.get('type', ''),
-            subtype=data.get('subtype', ''),
-            description=data.get('description', ''),
+            name=data.get("name", ""),
+            code=data.get("code", ""),
+            level=data.get("level", 1),
+            type=data.get("type", ""),
+            subtype=data.get("subtype", ""),
+            description=data.get("description", ""),
             effects=effects,
-            craft=craft
+            craft=craft,
         )
 
 
 class AllItems:
     def __init__(self, items: List[Dict]) -> None:
-        self.items = [
-            Item.from_dict(item)
-            for item in items
-        ]
+        self.items = [Item.from_dict(item) for item in items]
 
     def filter(
-            self,
-            craft_material: AnyStr = None,
-            craft_skill: AnyStr = None,
-            max_level: int = None,
-            min_level: int = None) -> List[Item]:
+        self,
+        craft_material: AnyStr = None,
+        craft_skill: AnyStr = None,
+        max_level: int = None,
+        min_level: int = None,
+    ) -> List[Item]:
 
         filtered_craft_material = []
         if craft_material:

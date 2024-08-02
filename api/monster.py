@@ -8,7 +8,5 @@ class MonsterAPI(BaseAPI):
         super().__init__()
 
     def get_all_monsters(self) -> AllMonsters:
-        all_data = self.get_all(
-            method="/monsters"
-        )
+        all_data = self.get_all(method="/monsters")
         return AllMonsters(monsters=all_data)

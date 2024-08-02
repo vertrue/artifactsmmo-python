@@ -13,14 +13,15 @@ from typing import AnyStr, Dict
 
 class Crafter:
     def __init__(
-            self,
-            character: MyCharacterAPI,
-            monsters: AllMonsters,
-            maps: AllMaps,
-            items: AllItems,
-            resources: AllResources,
-            craft_skill: AnyStr,
-            attacker: Attacker) -> None:
+        self,
+        character: MyCharacterAPI,
+        monsters: AllMonsters,
+        maps: AllMaps,
+        items: AllItems,
+        resources: AllResources,
+        craft_skill: AnyStr,
+        attacker: Attacker,
+    ) -> None:
         self.character = character
         self.monsters = monsters
         self.maps = maps
@@ -31,8 +32,7 @@ class Crafter:
 
         self.bank = BankAPI()
         self.bank_map = self.bank.get_map(
-            character=self.character.character,
-            maps=self.maps
+            character=self.character.character, maps=self.maps
         )
 
         self.attacker = attacker
@@ -53,19 +53,16 @@ class Crafter:
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
             items=self.items,
-            monsters=self.monsters
+            monsters=self.monsters,
         )
         if item_for_attacker:
-            calculate_mobs_resource = self._calculate_craft(
-                item=item_for_attacker
-            )
+            calculate_mobs_resource = self._calculate_craft(item=item_for_attacker)
             if calculate_mobs_resource:
                 for item_code, quantity in calculate_mobs_resource.items():
-                    print(f"{self.character.character.name} commandin {self.attacker.character.character.name} to collect {item_code}...")
-                    self.attacker.add_farm_resource(
-                        code=item_code,
-                        quantity=quantity
+                    print(
+                        f"{self.character.character.name} commandin {self.attacker.character.character.name} to collect {item_code}..."
                     )
+                    self.attacker.add_farm_resource(code=item_code, quantity=quantity)
                 return self.farm_xp
             else:
                 return self.craft_for_attacker
@@ -75,8 +72,7 @@ class Crafter:
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
         item = self.character.character.find_best_craft(
-            skill=self.craft_skill,
-            items=self.items
+            skill=self.craft_skill, items=self.items
         )
         self._craft(item=item)
 
@@ -84,12 +80,14 @@ class Crafter:
         self.character.deposit_all()
 
     def craft_for_attacker(self):
-        print(f"{self.character.character.name} is crafting for {self.attacker.character.character.name}...")
+        print(
+            f"{self.character.character.name} is crafting for {self.attacker.character.character.name}..."
+        )
         item_for_attacker = self.character.character.find_best_craft_for_attacker(
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
             items=self.items,
-            monsters=self.monsters
+            monsters=self.monsters,
         )
         self._craft(item=item_for_attacker)
 
@@ -97,19 +95,20 @@ class Crafter:
         self.character.deposit_all()
 
     def _collect(self, item: Item, quantity: int):
-        character_quantity = self.character.character.get_resource_quantity(code=item.code)
+        character_quantity = self.character.character.get_resource_quantity(
+            code=item.code
+        )
         bank_quantity = self.bank.get_quantity(item_code=item.code)
 
         if quantity <= character_quantity:
             return
 
         if bank_quantity > 0:
-            self.character.withdraw(
-                code=item.code,
-                quantity=bank_quantity
-            )
+            self.character.withdraw(code=item.code, quantity=bank_quantity)
 
-        character_quantity = self.character.character.get_resource_quantity(code=item.code)
+        character_quantity = self.character.character.get_resource_quantity(
+            code=item.code
+        )
 
         if quantity <= character_quantity:
             return
@@ -127,15 +126,16 @@ class Crafter:
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
         if not root:
-            character_quantity = self.character.character.get_resource_quantity(code=item.code)
+            character_quantity = self.character.character.get_resource_quantity(
+                code=item.code
+            )
             quantity -= character_quantity
             if quantity > 0:
                 bank_quantity = self.bank.get_quantity(item_code=item.code)
                 if bank_quantity > 0:
                     self.character.move(target=self.bank_map)
                     self.character.withdraw(
-                        code=item.code,
-                        quantity=min(quantity, bank_quantity)
+                        code=item.code, quantity=min(quantity, bank_quantity)
                     )
                     quantity -= min(quantity, bank_quantity)
 
@@ -150,11 +150,7 @@ class Crafter:
                 if craft_item.craft is None:
                     self._collect(craft_item, item_quantity)
                 else:
-                    self._craft(
-                        item=craft_item,
-                        quantity=item_quantity,
-                        root=False
-                    )
+                    self._craft(item=craft_item, quantity=item_quantity, root=False)
 
             map = self.maps.closest(
                 character=self.character.character,
@@ -165,7 +161,9 @@ class Crafter:
             print(f"{self.character.character.name} has crafted {item_code}...")
 
     def _calculate_collect(self, item: Item, quantity: int) -> int:
-        character_quantity = self.character.character.get_resource_quantity(code=item.code)
+        character_quantity = self.character.character.get_resource_quantity(
+            code=item.code
+        )
         bank_quantity = self.bank.get_quantity(item_code=item.code)
 
         if quantity <= character_quantity:
@@ -179,11 +177,15 @@ class Crafter:
 
         return left
 
-    def _calculate_craft(self, item: Item, quantity: int = 1, root: bool = True) -> Dict:
+    def _calculate_craft(
+        self, item: Item, quantity: int = 1, root: bool = True
+    ) -> Dict:
         absent = {}
 
         if not root:
-            character_quantity = self.character.character.get_resource_quantity(code=item.code)
+            character_quantity = self.character.character.get_resource_quantity(
+                code=item.code
+            )
             quantity -= character_quantity
             if quantity > 0:
                 bank_quantity = self.bank.get_quantity(item_code=item.code)
@@ -203,9 +205,7 @@ class Crafter:
                         absent[craft_item.code] = left * quantity
             else:
                 child_absent = self._calculate_craft(
-                    item=craft_item,
-                    quantity=item_quantity,
-                    root=False
+                    item=craft_item, quantity=item_quantity, root=False
                 )
                 for key, value in child_absent.items():
                     try:
