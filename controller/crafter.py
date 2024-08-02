@@ -72,7 +72,7 @@ class Crafter:
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
         item = self.character.character.find_best_craft(
-            skill=self.craft_skill, items=self.items
+            skill=self.craft_skill, items=self.items, bank=self.bank
         )
         self._craft(item=item)
 
@@ -105,6 +105,7 @@ class Crafter:
 
         if bank_quantity > 0:
             self.character.withdraw(code=item.code, quantity=bank_quantity)
+            quantity -= bank_quantity
 
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
@@ -113,6 +114,12 @@ class Crafter:
         if quantity <= character_quantity:
             return
         left = quantity - character_quantity
+
+        if left <= 0:
+            return
+
+        print(left)
+        print(item)
 
         resource = self.resources.get_drops(drop=item.code)
 

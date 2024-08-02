@@ -153,16 +153,16 @@ class Character:
 
         return target_monster
 
-    def find_best_craft(self, skill: AnyStr, items: AllItems):
+    def find_best_craft(self, skill: AnyStr, items: AllItems, bank):
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
-            if self.can_craft_without_attacker(code=item.code, items=items):
+            if self.can_craft_without_attacker(code=item.code, items=items, bank=bank):
                 best_item = item
                 break
 
         for item in filtered_items:
-            if self.can_craft_without_attacker(code=item.code, items=items):
+            if self.can_craft_without_attacker(code=item.code, items=items, bank=bank):
                 if item.level > best_item.level:
                     best_item = item
 
@@ -268,7 +268,7 @@ class Character:
 
             return can_craft_children
 
-    def can_craft_without_attacker(self, code: AnyStr, items: AllItems) -> bool:
+    def can_craft_without_attacker(self, code: AnyStr, items: AllItems, bank) -> bool:
         item = items.get_one(code=code)
 
         if item.craft is None:
@@ -282,9 +282,14 @@ class Character:
 
             can_craft_children = True
             for child_item in item.craft.items:
-                can_craft_child = self.can_craft_without_attacker(
-                    code=child_item.code, items=items
-                )
-                can_craft_children = can_craft_children and can_craft_child
+                sub_item = items.get_one(code=child_item.code)
+                bank_quantity = bank.get_quantity(item_code=sub_item.code)
+                if bank_quantity >= child_item.quantity:
+                    continue
+                else:
+                    can_craft_child = self.can_craft_without_attacker(
+                        code=child_item.code, items=items, bank=bank
+                    )
+                    can_craft_children = can_craft_children and can_craft_child
 
             return can_craft_children
