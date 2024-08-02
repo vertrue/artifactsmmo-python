@@ -1,0 +1,43 @@
+*.las
+
+# Ignore VSCode files
+.vscode/*
+
+# Ignore macOS Desktop Services Store files
+.DS_Store
+
+# Ignore Intellij custom directory
+.idea
+
+# Ignore ASDF tool versions files
+.tool-versions
+
+# Ignove .env files
+.env
+
+# Ignore venv/.venv directories
+venv
+.venv
+
+# Ignore DrawIO local backup files
+*.drawio.bkp
+
+# ignore pyenv python version file
+.python-version
+
+# ignore python cache-dirs
+**/__pycache__
+
+# ignore cdk tmp files
+**/cdk.out
+
+megalinter-reports
+.mypy_cache
+.ruff_cache
+
+node_modules
+
+**/Batch_Testing
+
+**/.coverage
+src/test_results
