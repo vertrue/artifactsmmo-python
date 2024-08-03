@@ -62,6 +62,9 @@ class Attacker:
 
         self.character.deposit_all()
 
+        self.has_task = (self.character.character.task != "")
+        self.task = None
+
     def run(self):
         self.action = self.pick_action()
         if self.action:
@@ -164,6 +167,9 @@ class Attacker:
                 self.character.withdraw(code=bank_item.code)
                 self.character.unequip(slot=bank_item.type)
                 self.character.equip(code=bank_item.code, slot=bank_item.type)
+
+    def take_task(self):
+        pass
 
     @property
     def has_farm_resources(self):

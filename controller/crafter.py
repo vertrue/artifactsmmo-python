@@ -81,8 +81,7 @@ class Crafter:
                 return self.farm_xp
             else:
                 self.wait_for_attacker = False
-                # return self.craft_for_attacker
-                return self.farm_xp
+                return self.craft_for_attacker
         else:
             return self.farm_xp
 
@@ -123,6 +122,7 @@ class Crafter:
             return
 
         if bank_quantity > 0:
+            self.character.move(target=self.bank_map)
             self.character.withdraw(
                 code=item.code, quantity=min(quantity, bank_quantity)
             )
@@ -177,7 +177,6 @@ class Crafter:
             item_code = part.code
 
             craft_item = self.items.get_one(code=item_code)
-            print(craft_item)
 
             if craft_item.craft is None:
                 self._collect(craft_item, item_quantity * quantity)
@@ -188,8 +187,8 @@ class Crafter:
             character=self.character.character,
             content_code=item.craft.skill,
         )
-        self.character.move(target=map)
         for _ in range(quantity):
+            self.character.move(target=map)
             self.character.craft(code=item.code)
             print(f"{self.character.character.name} has crafted {item_code}...")
 
