@@ -17,24 +17,21 @@ class MonsterResource:
 
 class FarmResources:
     def __init__(self, monsters: AllMonsters) -> None:
-        self.resources: List[MonsterResource] = []
+        self.resources: MonsterResource = None
         self.monsters = monsters
 
     def add(self, code: AnyStr, quantity: int) -> None:
-        self.resources.append(
-            MonsterResource(code=code, quantity=quantity, monsters=self.monsters)
+        self.resources = MonsterResource(
+            code=code, quantity=quantity, monsters=self.monsters
         )
 
     def get(self) -> MonsterResource | None:
-        try:
-            return self.resources[0]
-        except IndexError:
-            return None
+        return self.resources
 
     def farmed(self, quantity: int = 1) -> None:
-        self.resources[0].quantity -= quantity
-        if self.resources[0].quantity <= 0:
-            del self.resources[0]
+        self.resources.quantity -= quantity
+        if self.resources.quantity <= 0:
+            self.resources = None
             return True
         return False
 
@@ -57,7 +54,7 @@ class Attacker:
             character=self.character.character, maps=self.maps
         )
 
-        self.farm_queue = FarmResources(monsters=self.monsters)
+        self.farm_queue: FarmResources = FarmResources(monsters=self.monsters)
 
         self.action = None
 
@@ -78,21 +75,29 @@ class Attacker:
 
     def add_farm_resource(self, code: AnyStr, quantity: int):
         current_quantity = self.character.character.get_resource_quantity(code=code)
-        monster = self.monsters.get_drops(drop=code)
-        if not self.character.character.can_beat(monster):
-            return False
-
         if current_quantity >= quantity:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
-        else:
-            diff_quantity = quantity - current_quantity
-            self.farm_queue.add(code=code, quantity=diff_quantity)
+
+        monster = self.monsters.get_drops(drop=code)
+        if self.farm_queue.get():
+            print(
+                f"{self.character.character.name} is farming {monster.name} and cannot add new queue"
+            )
+            return False
+        if not self.character.character.can_beat(monster):
+            return False
+
+        diff_quantity = quantity - current_quantity
+        self.farm_queue.add(code=code, quantity=diff_quantity)
+        print(f"{self.character.character.name} is now farming {monster.name}")
         return True
 
     def farm_resource(self):
         resource = self.farm_queue.get()
-        print(f"{self.character.character.name} is farming {resource.resource}... {resource.quantity} {resource.resource} left")
+        print(
+            f"{self.character.character.name} is farming {resource.resource}... {resource.quantity} {resource.resource} left"
+        )
         resource_q_before = self.character.character.get_resource_quantity(
             code=resource.resource
         )
@@ -119,8 +124,8 @@ class Attacker:
         print(
             f"{self.character.character.name} is farming xp {self.farm_xp_iter} times..."
         )
+        self.check_better_equipment()
         if self.farm_xp_iter % 10 == 0:
-            self.check_better_equipment()
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
         best_monster = self.character.character.find_best_monster(
@@ -162,4 +167,4 @@ class Attacker:
 
     @property
     def has_farm_resources(self):
-        return len(self.farm_queue.resources) > 0
+        return self.farm_queue.resources is not None

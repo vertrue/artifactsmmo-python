@@ -8,6 +8,7 @@ from interfaces import (
     maps,
     items,
     resources,
+    bank,
 )
 from controller.attacker import Attacker
 from controller.crafter import Crafter
@@ -23,6 +24,7 @@ gearcrafter = Crafter(
     maps=maps,
     items=items,
     resources=resources,
+    bank=bank,
     craft_skill="gearcrafting",
     attacker=attacker,
 )
@@ -33,6 +35,7 @@ weaponcrafter = Crafter(
     maps=maps,
     items=items,
     resources=resources,
+    bank=bank,
     craft_skill="weaponcrafting",
     attacker=attacker,
 )
@@ -43,6 +46,7 @@ jewelrycrafter = Crafter(
     maps=maps,
     items=items,
     resources=resources,
+    bank=bank,
     craft_skill="jewelrycrafting",
     attacker=attacker,
 )

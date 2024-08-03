@@ -19,6 +19,7 @@ class Crafter:
         maps: AllMaps,
         items: AllItems,
         resources: AllResources,
+        bank: BankAPI,
         craft_skill: AnyStr,
         attacker: Attacker,
     ) -> None:
@@ -30,7 +31,7 @@ class Crafter:
 
         self.craft_skill = craft_skill
 
-        self.bank = BankAPI()
+        self.bank = bank
         self.bank_map = self.bank.get_map(
             character=self.character.character, maps=self.maps
         )
@@ -42,6 +43,8 @@ class Crafter:
         self.farm_xp_iter = 0
 
         self.character.deposit_all()
+
+        self.wait_for_attacker = False
 
     def run(self):
         self.action = self.pick_action()
@@ -58,13 +61,26 @@ class Crafter:
         if item_for_attacker:
             calculate_mobs_resource = self._calculate_craft(item=item_for_attacker)
             if calculate_mobs_resource:
+                if self.wait_for_attacker:
+                    return self.farm_xp
                 for item_code, quantity in calculate_mobs_resource.items():
                     print(
                         f"{self.character.character.name} commandin {self.attacker.character.character.name} to collect {item_code}..."
                     )
-                    self.attacker.add_farm_resource(code=item_code, quantity=quantity)
+                    added = self.attacker.add_farm_resource(
+                        code=item_code, quantity=quantity
+                    )
+                    if added:
+                        self.bank.add_reserve(
+                            item_code=item_code,
+                            quantity=quantity,
+                            reverved_by=self.character.character.name,
+                        )
+                        self.wait_for_attacker = True
+                        return self.farm_xp
                 return self.farm_xp
             else:
+                self.wait_for_attacker = False
                 return self.craft_for_attacker
         else:
             return self.farm_xp
@@ -98,13 +114,22 @@ class Crafter:
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
-        bank_quantity = self.bank.get_quantity(item_code=item.code)
+        bank_quantity = self.bank.get_quantity(
+            item_code=item.code, character_name=self.character.character.name
+        )
 
         if quantity <= character_quantity:
             return
 
         if bank_quantity > 0:
-            self.character.withdraw(code=item.code, quantity=min(quantity, bank_quantity))
+            self.character.withdraw(
+                code=item.code, quantity=min(quantity, bank_quantity)
+            )
+            self.bank.delete_reserve(
+                item_code=item.code,
+                quantity=quantity,
+                reverved_by=self.character.character.name,
+            )
             quantity -= min(quantity, bank_quantity)
 
         character_quantity = self.character.character.get_resource_quantity(
@@ -135,7 +160,9 @@ class Crafter:
             )
             quantity -= character_quantity
             if quantity > 0:
-                bank_quantity = self.bank.get_quantity(item_code=item.code)
+                bank_quantity = self.bank.get_quantity(
+                    item_code=item.code, character_name=self.character.character.name
+                )
                 if bank_quantity > 0:
                     self.character.move(target=self.bank_map)
                     self.character.withdraw(
@@ -168,7 +195,9 @@ class Crafter:
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
-        bank_quantity = self.bank.get_quantity(item_code=item.code)
+        bank_quantity = self.bank.get_quantity(
+            item_code=item.code, character_name=self.character.character.name
+        )
 
         if quantity <= character_quantity:
             return 0
@@ -192,7 +221,9 @@ class Crafter:
             )
             quantity -= character_quantity
             if quantity > 0:
-                bank_quantity = self.bank.get_quantity(item_code=item.code)
+                bank_quantity = self.bank.get_quantity(
+                    item_code=item.code, character_name=self.character.character.name
+                )
                 if bank_quantity > 0:
                     quantity -= min(quantity, bank_quantity)
 
