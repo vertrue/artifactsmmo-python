@@ -61,9 +61,10 @@ class Attacker:
         self.farm_xp_iter = 0
 
         self.character.deposit_all()
-
-        self.has_task = (self.character.character.task != "")
-        self.task = None
+        print(self.has_task)
+        print(self.character.character.task, self.character.character.task_total)
+        if not self.has_task:
+            self.accept_task()
 
     def run(self):
         self.action = self.pick_action()
@@ -73,6 +74,8 @@ class Attacker:
     def pick_action(self):
         if self.has_farm_resources:
             return self.farm_resource
+        elif self.can_complete_task and self.has_task:
+            return self.do_task
         else:
             return self.farm_xp
 
@@ -168,9 +171,48 @@ class Attacker:
                 self.character.unequip(slot=bank_item.type)
                 self.character.equip(code=bank_item.code, slot=bank_item.type)
 
-    def take_task(self):
-        pass
+    def accept_task(self):
+        print(f"{self.character.character.name} is accepting new task...")
+        task_map = self.maps.closest(
+            character=self.character.character, content_type="tasks_master"
+        )
+        self.character.move(target=task_map)
+        self.character.accept_task()
+
+    def do_task(self):
+        print(f"{self.character.character.name} is doing task...")
+        print(self.character.character.task)
+        print(self.character.character.task_total)
+        if (
+            self.character.character.task_progress
+            == self.character.character.task_total
+        ):
+            self.complete_task()
+        monster_map = self.maps.closest(
+            character=self.character.character,
+            content_code=self.character.character.task,
+        )
+        self.character.move(target=monster_map)
+        self.character.fight()
+
+    def complete_task(self):
+        print(f"{self.character.character.name} completed task...")
+        task_map = self.maps.closest(
+            character=self.character.character, content_type="tasks_master"
+        )
+        self.character.move(target=task_map)
+        self.character.complete_task()
 
     @property
     def has_farm_resources(self):
         return self.farm_queue.resources is not None
+
+    @property
+    def has_task(self):
+        return self.character.character.task != ""
+
+    @property
+    def can_complete_task(self):
+        return self.character.character.can_beat(
+            monster=self.monsters.get(self.character.character.task)
+        )

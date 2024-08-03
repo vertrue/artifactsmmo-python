@@ -88,19 +88,13 @@ class MyCharacterAPI(MapAPI):
     def accept_task(self):
         method = f"/my/{self.character.name}/action/task/new"
 
-        response_code, response_data = self.post(
-            method=method
-        )
+        response_code, response_data = self.post(method=method)
         self._update_character()
-
-        return response_data["task"]
 
     def complete_task(self):
         method = f"/my/{self.character.name}/action/task/new"
 
-        response_code, response_data = self.post(
-            method=method
-        )
+        response_code, response_data = self.post(method=method)
         self._update_character()
 
     def _update_character(self) -> None:

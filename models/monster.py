@@ -96,3 +96,10 @@ class AllMonsters:
                 picked_monster = monster
 
         return picked_monster
+
+    def get(self, code: AnyStr) -> Monster:
+        for monster in self.monsters:
+            if monster.code == code:
+                return monster
+
+        return None
