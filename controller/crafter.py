@@ -162,7 +162,7 @@ class Crafter:
             content_code=resource.code,
         )
         self.character.move(target=map)
-        while self.character.character.get_resource_quantity(code=item.code) < quantity
+        while self.character.character.get_resource_quantity(code=item.code) < quantity:
             self.character.gather()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
