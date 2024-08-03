@@ -92,7 +92,7 @@ class Attacker:
 
     def farm_resource(self):
         resource = self.farm_queue.get()
-        print(f"{self.character.character.name} is farming {resource.resource}...")
+        print(f"{self.character.character.name} is farming {resource.resource}... {resource.quantity} {resource.resource) left")
         resource_q_before = self.character.character.get_resource_quantity(
             code=resource.resource
         )
