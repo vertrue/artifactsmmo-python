@@ -290,7 +290,9 @@ class Character:
             can_craft_children = True
             for child_item in item.craft.items:
                 sub_item = items.get_one(code=child_item.code)
-                bank_quantity = bank.get_quantity(item_code=sub_item.code, character_name=self.name)
+                bank_quantity = bank.get_quantity(
+                    item_code=sub_item.code, character_name=self.name
+                )
                 if bank_quantity >= child_item.quantity:
                     continue
                 else:

@@ -76,7 +76,9 @@ class Cooker:
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
-        bank_quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name)
+        bank_quantity = self.bank.get_quantity(
+            item_code=item.code, character_name=self.character.character.name
+        )
 
         if quantity <= character_quantity:
             return
@@ -100,7 +102,7 @@ class Cooker:
             content_code=resource.code,
         )
         self.character.move(target=map)
-        for _ in range(left):
+        while self.character.character.get_resource_quantity(code=item.code) < left:
             self.character.gather()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
@@ -110,7 +112,9 @@ class Cooker:
             )
             quantity -= character_quantity
             if quantity > 0:
-                bank_quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name)
+                bank_quantity = self.bank.get_quantity(
+                    item_code=item.code, character_name=self.character.character.name
+                )
                 if bank_quantity > 0:
                     self.character.move(target=self.bank_map)
                     self.character.withdraw(
@@ -142,7 +146,9 @@ class Cooker:
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
-        bank_quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name)
+        bank_quantity = self.bank.get_quantity(
+            item_code=item.code, character_name=self.character.character.name
+        )
 
         if quantity <= character_quantity:
             return 0
@@ -166,7 +172,9 @@ class Cooker:
             )
             quantity -= character_quantity
             if quantity > 0:
-                bank_quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name)
+                bank_quantity = self.bank.get_quantity(
+                    item_code=item.code, character_name=self.character.character.name
+                )
                 if bank_quantity > 0:
                     quantity -= min(quantity, bank_quantity)
 
