@@ -143,24 +143,24 @@ class Crafter:
                     )
                     quantity -= min(quantity, bank_quantity)
 
+        print(f"{self.character.character.name} is crafting {item.code}...")
+        for part in item.craft.items:
+            item_quantity = part.quantity
+            item_code = part.code
+
+            craft_item = self.items.get_one(code=item_code)
+
+            if craft_item.craft is None:
+                self._collect(craft_item, item_quantity * quantity)
+            else:
+                self._craft(item=craft_item, quantity=item_quantity, root=False)
+
+        map = self.maps.closest(
+            character=self.character.character,
+            content_code=item.craft.skill,
+        )
+        self.character.move(target=map)
         for _ in range(quantity):
-            print(f"{self.character.character.name} is crafting {item.code}...")
-            for part in item.craft.items:
-                item_quantity = part.quantity
-                item_code = part.code
-
-                craft_item = self.items.get_one(code=item_code)
-
-                if craft_item.craft is None:
-                    self._collect(craft_item, item_quantity)
-                else:
-                    self._craft(item=craft_item, quantity=item_quantity, root=False)
-
-            map = self.maps.closest(
-                character=self.character.character,
-                content_code=item.craft.skill,
-            )
-            self.character.move(target=map)
             self.character.craft(code=item.code)
             print(f"{self.character.character.name} has crafted {item_code}...")
 
