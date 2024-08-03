@@ -4,6 +4,8 @@ from typing import List, Dict, Optional, AnyStr
 from models.monster import Monster, AllMonsters
 from models.item import Item, AllItems
 
+from copy import copy
+
 
 @dataclass
 class InventoryItem:
@@ -114,22 +116,32 @@ class Character:
             item = items.get_one(item_code)
             return item
         except AttributeError:
-            try:
-                item_code = eval(f"self.{slot}1_slot")
-                item = items.get_one(item_code)
-                return item
-            except AttributeError:
+            if slot == "ring":
                 try:
-                    item_code = eval(f"self.{slot}2_slot")
-                    item = items.get_one(item_code)
-                    return item
+                    item_code_1 = eval(f"self.{slot}1_slot")
+                    item_1 = items.get_one(item_code_1)
+                    item_code_2 = eval(f"self.{slot}2_slot")
+                    item_2 = items.get_one(item_code_2)
+                    return item_1 if item_1.level < item_2.level else item_2
                 except AttributeError:
-                    try:
-                        item_code = eval(f"self.{slot}3_slot")
-                        item = items.get_one(item_code)
-                        return item
-                    except AttributeError:
-                        return None
+                    return None
+            elif slot == "artifact":
+                try:
+                    item_code_1 = eval(f"self.{slot}1_slot")
+                    item_1 = items.get_one(item_code_1)
+                    item_code_2 = eval(f"self.{slot}2_slot")
+                    item_2 = items.get_one(item_code_2)
+                    item_code_3 = eval(f"self.{slot}3_slot")
+                    item_3 = items.get_one(item_code_3)
+                    if item_1.level <= item_2.level and item_1.level <= item_3.level:
+                        return item_1
+                    if item_2.level <= item_3.level and item_2.level <= item_1.level:
+                        return item_2
+                    if item_3.level <= item_2.level and item_3.level <= item_1.level:
+                        return item_1
+                    return item_1
+                except AttributeError:
+                    return None
 
     def get_resource_quantity(self, code: AnyStr):
         for item in self.inventory:
@@ -157,6 +169,216 @@ class Character:
                 target_monster = monster
 
         return target_monster
+
+    def can_beat(self, monster: Monster):
+        players_hp = self.hp
+        mobs_hp = monster.hp
+
+        for _ in range(50):
+            # player
+            player_attack = (
+                self.attack_air * (1 + self.dmg_air / 100) * (1 - monster.res_air / 100)
+            )
+            player_attack += (
+                self.attack_earth
+                * (1 + self.dmg_earth / 100)
+                * (1 - monster.res_earth / 100)
+            )
+            player_attack += (
+                self.attack_fire
+                * (1 + self.dmg_fire / 100)
+                * (1 - monster.res_fire / 100)
+            )
+            player_attack += (
+                self.attack_water
+                * (1 + self.dmg_water / 100)
+                * (1 - monster.res_water / 100)
+            )
+
+            mobs_hp -= player_attack
+
+            if mobs_hp < 0:
+                return True
+
+            # mob
+            mob_attack = monster.attack_air * (1 - self.res_air / 100)
+            mob_attack += monster.attack_earth * (1 - self.attack_earth / 100)
+            mob_attack += monster.attack_fire * (1 - self.res_fire / 100)
+            mob_attack += monster.attack_water * (1 - self.res_water / 100)
+
+            players_hp -= mob_attack
+
+            if players_hp < 0:
+                return False
+
+        return False
+
+    @staticmethod
+    def unequiped_stats(character: 'Character', item: Item):
+        char = copy(character)
+        for effect in item.effects:
+            current_value = getattr(char, effect.name)
+            setattr(char, effect.name, current_value - effect.value)
+
+        return char
+
+    @staticmethod
+    def equiped_stats(character: 'Character', item: Item):
+        char = copy(character)
+        for effect in item.effects:
+            current_value = getattr(char, effect.name)
+            setattr(char, effect.name, current_value + effect.value)
+
+        return char
+
+    def can_beat_check(self, monster: Monster, item: Item, items: AllItems, picked_items: Dict[AnyStr, Item | int | bool | None]):
+        character = copy(self)
+        for slot, picked_item in picked_items.items():
+            if slot != "can_beat" and slot != "rounds" and picked_item is not None:
+                equiped_item = character.get_slot_item(slot=slot, items=items)
+                if equiped_item is None:
+                    equiped = self.equiped_stats(character=character, item=picked_item)
+                else:
+                    unequiped = self.unequiped_stats(character=character, item=equiped_item)
+                    equiped = self.equiped_stats(character=unequiped, item=picked_item)
+                character = equiped
+
+        equiped_item = character.get_slot_item(slot=item.type, items=items)
+        if equiped_item is None:
+            equiped = self.equiped_stats(character=character, item=item)
+        else:
+            unequiped = self.unequiped_stats(character=character, item=equiped_item)
+            equiped = self.equiped_stats(character=unequiped, item=item)
+        character = equiped
+
+        players_hp = self.hp
+        mobs_hp = monster.hp
+
+        for i in range(50):
+            # player
+            player_attack = (
+                character.attack_air * (1 + character.dmg_air / 100) * (1 - monster.res_air / 100)
+            )
+            player_attack += (
+                character.attack_earth
+                * (1 + character.dmg_earth / 100)
+                * (1 - monster.res_earth / 100)
+            )
+            player_attack += (
+                character.attack_fire
+                * (1 + character.dmg_fire / 100)
+                * (1 - monster.res_fire / 100)
+            )
+            player_attack += (
+                character.attack_water
+                * (1 + character.dmg_water / 100)
+                * (1 - monster.res_water / 100)
+            )
+
+            mobs_hp -= player_attack
+
+            if mobs_hp < 0:
+                return True, i + 1, mobs_hp
+
+            # mob
+            mob_attack = monster.attack_air * (1 - character.res_air / 100)
+            mob_attack += monster.attack_earth * (1 - character.attack_earth / 100)
+            mob_attack += monster.attack_fire * (1 - character.res_fire / 100)
+            mob_attack += monster.attack_water * (1 - character.res_water / 100)
+
+            players_hp -= mob_attack
+
+            if players_hp < 0:
+                return False, i + 1, mobs_hp
+
+        return False, i + 1, mobs_hp
+
+    def find_optimal_build(self, monster: Monster, items: AllItems, bank):
+        slots = [
+            'weapon',
+            'shield',
+            'helmet',
+            'body_armor',
+            'leg_armor',
+            'boots',
+            'ring1',
+            'ring2',
+            'amulet',
+            'artifact1',
+            'artifact2',
+            'artifact3'
+        ]
+
+        all_items = bank.get_all_items()
+        bank_items = [
+            items.get_one(item.code)
+            for item in all_items.items
+        ]
+
+        picked_items = {
+            "can_beat": self.can_beat(monster=monster),
+            "rounds": 50
+        }
+
+        for slot in slots:
+            character_item = self.get_slot_item(slot=slot, items=items)
+
+            possible_items = [character_item]
+
+            for item in bank_items:
+                if item.type == slot:
+                    possible_items += [item]
+
+            if possible_items == [None]:
+                picked_items[slot] = None
+                continue
+
+            best_item = character_item
+
+            for item in possible_items:
+                if item is not None:
+                    best_item = self.pick_best(best_item=best_item, candidate=item, monster=monster, items=items, picked_items=picked_items)
+
+            picked_items[slot] = best_item
+            picked_items["can_beat"], rounds, mobs_hp = self.can_beat_check(
+                monster=monster,
+                item=best_item,
+                items=items,
+                picked_items=picked_items
+            )
+            picked_items["rounds"] = min(picked_items["rounds"], rounds)
+
+        return picked_items
+
+    def pick_best(self, best_item: Item, candidate: Item, monster: Monster, items: AllItems, picked_items: Dict):
+        _, best_item_rounds, best_item_mobs_hp = self.can_beat_check(
+            monster=monster,
+            item=best_item,
+            items=items,
+            picked_items=picked_items
+        )
+
+        candidate_item_result, candidate_item_rounds, candidate_mobs_hp = self.can_beat_check(
+            monster=monster,
+            item=candidate,
+            items=items,
+            picked_items=picked_items
+        )
+
+        if candidate_item_result:
+            if candidate_item_rounds < best_item_rounds:
+                return candidate
+            else:
+                return best_item
+        else:
+            if candidate_mobs_hp < best_item_mobs_hp:
+                return candidate
+            else:
+                return best_item
+
+    def can_farm_resource(self, code: AnyStr, monsters: AllMonsters) -> bool:
+        monster = monsters.get_drops(drop=code)
+        return self.can_beat(monster)
 
     def find_unique_craft(
         self,
@@ -213,57 +435,6 @@ class Character:
                     < item.level
                 ):
                     return item
-
-    def can_beat(self, monster: Monster):
-        players_hp = self.hp
-        mobs_hp = monster.hp
-
-        for _ in range(50):
-            # player
-            player_attack = (
-                self.attack_air * (1 + self.dmg_air / 100) * (1 - monster.res_air / 100)
-            )
-            player_attack += (
-                self.attack_earth
-                * (1 + self.dmg_earth / 100)
-                * (1 - monster.res_earth / 100)
-            )
-            player_attack += (
-                self.attack_fire
-                * (1 + self.dmg_fire / 100)
-                * (1 - monster.res_fire / 100)
-            )
-            player_attack += (
-                self.attack_water
-                * (1 + self.dmg_water / 100)
-                * (1 - monster.res_water / 100)
-            )
-
-            mobs_hp -= player_attack
-
-            # print(players_hp, mobs_hp)
-
-            if mobs_hp < 0:
-                return True
-
-            # mob
-            mob_attack = monster.attack_air * (1 - self.res_air / 100)
-            mob_attack += monster.attack_earth * (1 - self.attack_earth / 100)
-            mob_attack += monster.attack_fire * (1 - self.res_fire / 100)
-            mob_attack += monster.attack_water * (1 - self.res_water / 100)
-
-            players_hp -= mob_attack
-
-            # print(players_hp, mobs_hp)
-
-            if players_hp < 0:
-                return False
-
-        return False
-
-    def can_farm_resource(self, code: AnyStr, monsters: AllMonsters) -> bool:
-        monster = monsters.get_drops(drop=code)
-        return self.can_beat(monster)
 
     def can_craft(
         self,

@@ -77,7 +77,7 @@ class Crafter:
                         f"{self.character.character.name} is commanding {self.attacker.character.character.name} to collect {item_code} for crafting {item_for_attacker.name}..."
                     )
                     added = self.attacker.add_farm_resource(
-                        code=item_code, quantity=quantity
+                        code=item_code, quantity=quantity, source=self
                     )
                     if added:
                         self.bank.add_reserve(
@@ -198,6 +198,7 @@ class Crafter:
         map = self.maps.closest(
             character=self.character.character,
             content_code=item.craft.skill,
+            content_type="workshop"
         )
 
         while self.character.character.get_resource_quantity(code=item.code) < quantity:

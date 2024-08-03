@@ -89,7 +89,7 @@ class MyCharacterAPI(MapAPI):
         self._update_character()
 
     def complete_task(self):
-        method = f"/my/{self.character.name}/action/task/new"
+        method = f"/my/{self.character.name}/action/task/complete"
 
         response_code, response_data = self.post(method=method)
         self._update_character()

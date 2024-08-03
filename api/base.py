@@ -25,10 +25,10 @@ def cooldown():
             sleep_duration = (expires - now).total_seconds()
 
             if sleep_duration > 0:
-                # print(f"sleeping for {sleep_duration} secs")
                 sleep(sleep_duration)
 
-            return function(self, *args, **kwargs)
+            response_code, response_data = function(self, *args, **kwargs)
+            return response_code, response_data
 
         return wrapper
 
@@ -56,8 +56,10 @@ class BaseAPI:
         )
 
         response_code = response.status_code
-        response_data = json.loads(response.text)
-        # print(response_code, "POST", url)
+        try:
+            response_data = json.loads(response.text)
+        except json.JSONDecodeError:
+            print(response)
 
         try:
             self.cooldown_expires = response_data["data"]["cooldown"]["expiration"]

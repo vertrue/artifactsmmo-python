@@ -19,11 +19,13 @@ class FarmResources:
     def __init__(self, monsters: AllMonsters) -> None:
         self.resources: MonsterResource = None
         self.monsters = monsters
+        self.source = None
 
-    def add(self, code: AnyStr, quantity: int) -> None:
+    def add(self, code: AnyStr, quantity: int, source) -> None:
         self.resources = MonsterResource(
             code=code, quantity=quantity, monsters=self.monsters
         )
+        self.source = source
 
     def get(self) -> MonsterResource | None:
         return self.resources
@@ -32,6 +34,7 @@ class FarmResources:
         self.resources.quantity -= quantity
         if self.resources.quantity <= 0:
             self.resources = None
+            self.source.wait_for_attacker = False
             return True
         return False
 
@@ -78,7 +81,7 @@ class Attacker:
         else:
             return self.farm_xp
 
-    def add_farm_resource(self, code: AnyStr, quantity: int):
+    def add_farm_resource(self, code: AnyStr, quantity: int, source):
         current_quantity = self.character.character.get_resource_quantity(code=code)
         if current_quantity >= quantity:
             self.character.move(target=self.bank_map)
@@ -94,7 +97,7 @@ class Attacker:
             return False
 
         diff_quantity = quantity - current_quantity
-        self.farm_queue.add(code=code, quantity=diff_quantity)
+        self.farm_queue.add(code=code, quantity=diff_quantity, source=source)
         print(f"{self.character.character.name} is now farming {monster.name}")
         return True
 
