@@ -81,7 +81,8 @@ class Crafter:
                 return self.farm_xp
             else:
                 self.wait_for_attacker = False
-                return self.craft_for_attacker
+                # return self.craft_for_attacker
+                return self.farm_xp
         else:
             return self.farm_xp
 
@@ -176,6 +177,7 @@ class Crafter:
             item_code = part.code
 
             craft_item = self.items.get_one(code=item_code)
+            print(craft_item)
 
             if craft_item.craft is None:
                 self._collect(craft_item, item_quantity * quantity)
