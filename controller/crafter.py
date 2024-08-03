@@ -73,7 +73,7 @@ class Crafter:
                     return self.farm_xp
                 for item_code, quantity in calculate_mobs_resource.items():
                     print(
-                        f"{self.character.character.name} commanding {self.attacker.character.character.name} to collect {item_code} for crafting {item_for_attacker.name}..."
+                        f"{self.character.character.name} is commanding {self.attacker.character.character.name} to collect {item_code} for crafting {item_for_attacker.name}..."
                     )
                     added = self.attacker.add_farm_resource(
                         code=item_code, quantity=quantity
@@ -147,17 +147,12 @@ class Crafter:
                 quantity=quantity,
                 reverved_by=self.character.character.name,
             )
-            quantity -= min(quantity, bank_quantity)
 
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
 
         if quantity <= character_quantity:
-            return
-        left = quantity - character_quantity
-
-        if left <= 0:
             return
 
         resource = self.resources.get_drops(drop=item.code)
@@ -167,7 +162,7 @@ class Crafter:
             content_code=resource.code,
         )
         self.character.move(target=map)
-        for _ in range(left):
+        while self.character.character.get_resource_quantity(code=item.code) < quantity
             self.character.gather()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
@@ -203,7 +198,8 @@ class Crafter:
             character=self.character.character,
             content_code=item.craft.skill,
         )
-        for _ in range(quantity):
+
+        while self.character.character.get_resource_quantity(code=item.code) < quantity:
             self.character.move(target=map)
             self.character.craft(code=item.code)
             print(f"{self.character.character.name} has crafted {item_code}...")
