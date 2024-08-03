@@ -42,6 +42,7 @@ class Crafter:
 
         self.farm_xp_iter = 0
 
+        self.character.move(target=self.bank_map)
         self.character.deposit_all()
 
         self.wait_for_attacker = False

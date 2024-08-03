@@ -60,6 +60,7 @@ class Attacker:
 
         self.farm_xp_iter = 0
 
+        self.character.move(target=self.bank_map)
         self.character.deposit_all()
         if not self.has_task:
             self.accept_task()
