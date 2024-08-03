@@ -104,8 +104,8 @@ class Crafter:
             return
 
         if bank_quantity > 0:
-            self.character.withdraw(code=item.code, quantity=bank_quantity)
-            quantity -= bank_quantity
+            self.character.withdraw(code=item.code, quantity=min(quantity, bank_quantity))
+            quantity -= min(quantity, bank_quantity)
 
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
@@ -117,9 +117,6 @@ class Crafter:
 
         if left <= 0:
             return
-
-        print(left)
-        print(item)
 
         resource = self.resources.get_drops(drop=item.code)
 
