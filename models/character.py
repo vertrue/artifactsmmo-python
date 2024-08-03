@@ -124,7 +124,12 @@ class Character:
                     item = items.get_one(item_code)
                     return item
                 except AttributeError:
-                    return None
+                    try:
+                        item_code = eval(f"self.{slot}3_slot")
+                        item = items.get_one(item_code)
+                        return item
+                    except AttributeError:
+                        return None
 
     def get_resource_quantity(self, code: AnyStr):
         for item in self.inventory:
@@ -181,6 +186,8 @@ class Character:
             if self.can_craft(
                 code=item.code, attacker=attacker, items=items, monsters=monsters
             ):
+                if attacker.get_slot_item(slot=item.type, items=items) is None:
+                    return item
                 if (
                     attacker.get_slot_item(slot=item.type, items=items).level
                     < item.level

@@ -4,7 +4,9 @@ from time import sleep
 from datetime import datetime, timezone
 from typing import Tuple, Dict, AnyStr
 from dotenv import dotenv_values
+import urllib3
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 config = dotenv_values(".env")
 
