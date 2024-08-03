@@ -61,8 +61,6 @@ class Attacker:
         self.farm_xp_iter = 0
 
         self.character.deposit_all()
-        print(self.has_task)
-        print(self.character.character.task, self.character.character.task_total)
         if not self.has_task:
             self.accept_task()
 
