@@ -1,9 +1,6 @@
 from api.map import MapAPI
-from api.resource import ResourceAPI
-from api.bank import BankAPI
 
 from models.character import Character
-from models.item import Item
 
 from models.map import Map
 

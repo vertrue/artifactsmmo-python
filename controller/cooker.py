@@ -52,6 +52,7 @@ class Cooker:
         return self.farm_xp
 
     def farm_xp(self):
+        print(f"{self.character.character.name} is farming xp...")
         item = self.character.character.find_best_craft(
             skill=self.craft_skill, items=self.items, bank=self.bank
         )
@@ -61,12 +62,23 @@ class Cooker:
         self.character.deposit_all()
 
     def craft_for_attacker(self):
-        item_for_attacker = self.character.character.find_best_craft_for_attacker(
+        print(
+            f"{self.character.character.name} is crafting for {self.attacker.character.character.name}..."
+        )
+        item_for_attacker = self.character.character.find_unique_craft(
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
             items=self.items,
+            bank=self.bank,
             monsters=self.monsters,
         )
+        if item_for_attacker is None:
+            item_for_attacker = self.character.character.find_best_craft_for_attacker(
+                skill=self.craft_skill,
+                attacker=self.attacker.character.character,
+                items=self.items,
+                monsters=self.monsters,
+            )
         self._craft(item=item_for_attacker)
 
         self.character.move(target=self.bank_map)
@@ -84,8 +96,16 @@ class Cooker:
             return
 
         if bank_quantity > 0:
-            self.character.withdraw(code=item.code, quantity=bank_quantity)
-            quantity -= bank_quantity
+            self.character.move(target=self.bank_map)
+            self.character.withdraw(
+                code=item.code, quantity=min(quantity, bank_quantity)
+            )
+            self.bank.delete_reserve(
+                item_code=item.code,
+                quantity=quantity,
+                reverved_by=self.character.character.name,
+            )
+            quantity -= min(quantity, bank_quantity)
 
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
@@ -95,6 +115,9 @@ class Cooker:
             return
         left = quantity - character_quantity
 
+        if left <= 0:
+            return
+
         resource = self.resources.get_drops(drop=item.code)
 
         map = self.maps.closest(
@@ -102,7 +125,7 @@ class Cooker:
             content_code=resource.code,
         )
         self.character.move(target=map)
-        while self.character.character.get_resource_quantity(code=item.code) < left:
+        for _ in range(left):
             self.character.gather()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
@@ -122,25 +145,26 @@ class Cooker:
                     )
                     quantity -= min(quantity, bank_quantity)
 
+        print(f"{self.character.character.name} is crafting {item.code}...")
+        for part in item.craft.items:
+            item_quantity = part.quantity
+            item_code = part.code
+
+            craft_item = self.items.get_one(code=item_code)
+
+            if craft_item.craft is None:
+                self._collect(craft_item, item_quantity * quantity)
+            else:
+                self._craft(item=craft_item, quantity=item_quantity, root=False)
+
+        map = self.maps.closest(
+            character=self.character.character,
+            content_code=item.craft.skill,
+        )
         for _ in range(quantity):
-            print(f"crafting {item.code}...")
-            for part in item.craft.items:
-                item_quantity = part.quantity
-                item_code = part.code
-
-                craft_item = self.items.get_one(code=item_code)
-
-                if craft_item.craft is None:
-                    self._collect(craft_item, item_quantity)
-                else:
-                    self._craft(item=craft_item, quantity=item_quantity, root=False)
-
-            map = self.maps.closest(
-                character=self.character.character,
-                content_code=item.craft.skill,
-            )
             self.character.move(target=map)
             self.character.craft(code=item.code)
+            print(f"{self.character.character.name} has crafted {item_code}...")
 
     def _calculate_collect(self, item: Item, quantity: int) -> int:
         character_quantity = self.character.character.get_resource_quantity(

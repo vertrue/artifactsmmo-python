@@ -3,6 +3,7 @@ from api.base import BaseAPI
 from models.bank import AllBankItems
 from models.map import AllMaps
 from models.character import Character
+from models.item import Item
 
 from typing import AnyStr, List
 
@@ -60,3 +61,7 @@ class BankAPI(BaseAPI):
     def get_all_items(self) -> AllBankItems:
         all_data = self.get_all(method="/my/bank/items")
         return AllBankItems(items=all_data)
+
+    def has_item(self, item: Item) -> bool:
+        code, _ = self.get(method="/my/bank/items", params={"item_code": item.code})
+        return code == 200

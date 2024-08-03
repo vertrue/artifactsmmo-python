@@ -86,7 +86,7 @@ class Attacker:
         monster = self.monsters.get_drops(drop=code)
         if self.farm_queue.get():
             print(
-                f"{self.character.character.name} is farming {monster.name} and cannot add new queue"
+                f"{self.character.character.name} is farming {self.farm_queue.get().resource} and cannot add new queue"
             )
             return False
         if not self.character.character.can_beat(monster):

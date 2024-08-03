@@ -52,12 +52,20 @@ class Crafter:
             self.action()
 
     def pick_action(self):
-        item_for_attacker = self.character.character.find_best_craft_for_attacker(
+        item_for_attacker = self.character.character.find_unique_craft(
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
             items=self.items,
+            bank=self.bank,
             monsters=self.monsters,
         )
+        if item_for_attacker is None:
+            item_for_attacker = self.character.character.find_best_craft_for_attacker(
+                skill=self.craft_skill,
+                attacker=self.attacker.character.character,
+                items=self.items,
+                monsters=self.monsters,
+            )
         if item_for_attacker:
             calculate_mobs_resource = self._calculate_craft(item=item_for_attacker)
             if calculate_mobs_resource:
@@ -65,7 +73,7 @@ class Crafter:
                     return self.farm_xp
                 for item_code, quantity in calculate_mobs_resource.items():
                     print(
-                        f"{self.character.character.name} commandin {self.attacker.character.character.name} to collect {item_code}..."
+                        f"{self.character.character.name} commanding {self.attacker.character.character.name} to collect {item_code} for crafting {item_for_attacker.name}..."
                     )
                     added = self.attacker.add_farm_resource(
                         code=item_code, quantity=quantity
@@ -99,12 +107,20 @@ class Crafter:
         print(
             f"{self.character.character.name} is crafting for {self.attacker.character.character.name}..."
         )
-        item_for_attacker = self.character.character.find_best_craft_for_attacker(
+        item_for_attacker = self.character.character.find_unique_craft(
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
             items=self.items,
+            bank=self.bank,
             monsters=self.monsters,
         )
+        if item_for_attacker is None:
+            item_for_attacker = self.character.character.find_best_craft_for_attacker(
+                skill=self.craft_skill,
+                attacker=self.attacker.character.character,
+                items=self.items,
+                monsters=self.monsters,
+            )
         self._craft(item=item_for_attacker)
 
         self.character.move(target=self.bank_map)

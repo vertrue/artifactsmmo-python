@@ -158,6 +158,26 @@ class Character:
 
         return target_monster
 
+    def find_unique_craft(
+        self,
+        skill: AnyStr,
+        attacker: "Character",
+        items: AllItems,
+        bank,
+        monsters: AllMonsters,
+    ):
+        filtered_items = items.filter(craft_skill=skill)
+
+        for item in filtered_items:
+            if self.can_craft(
+                code=item.code, attacker=attacker, items=items, monsters=monsters
+            ):
+                if not bank.has_item(item=item):
+                    if attacker.get_slot_item(slot=item.type, items=items) != item:
+                        return item
+
+        return None
+
     def find_best_craft(self, skill: AnyStr, items: AllItems, bank):
         filtered_items = items.filter(craft_skill=skill)
 

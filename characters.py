@@ -60,3 +60,13 @@ coocker = Cooker(
     craft_skill="cooking",
     attacker=attacker,
 )
+
+print(
+    gearcrafter.character.character.find_unique_craft(
+        skill=gearcrafter.craft_skill,
+        attacker=attacker.character.character,
+        items=items,
+        bank=bank,
+        monsters=monsters,
+    )
+)

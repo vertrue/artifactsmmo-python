@@ -65,7 +65,7 @@ class BaseAPI:
             return response_code, response_data
 
     @cooldown()
-    def get(self, method: AnyStr, params: Dict = {}) -> Tuple[Dict, int]:
+    def get(self, method: AnyStr, params: Dict = {}) -> Tuple[int, Dict]:
         url = self.host + method
         response = requests.get(url, headers=self.headers, params=params, verify=False)
 
