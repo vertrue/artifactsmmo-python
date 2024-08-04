@@ -10,6 +10,8 @@ from controller.attacker import Attacker
 
 from typing import AnyStr, Dict
 
+from time import sleep
+
 
 class Crafter:
     def __init__(
@@ -39,19 +41,24 @@ class Crafter:
         self.attacker = attacker
 
         self.action = None
-
-        self.farm_xp_iter = 0
-
         self.wait_for_attacker = False
 
     def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
 
+    def reset(self):
+        self.action = None
+        self.wait_for_attacker = False
+
     def run(self):
         self.action = self.pick_action()
         if self.action:
-            self.action()
+            try:
+                self.action()
+            except Exception:
+                sleep(60)
+                self.reset()
 
     def pick_action(self):
         item_for_attacker = self.character.character.find_unique_craft(
@@ -68,7 +75,8 @@ class Crafter:
                     return self.farm_xp
                 for item_code, quantity in calculate_mobs_resource.items():
                     print(
-                        f"{self.character.character.name} is commanding {self.attacker.character.character.name} to collect {item_code} for crafting {item_for_attacker.name}..."
+                        f"{self.character.character.name} is commanding {self.attacker.character.character.name} \
+                            to collect {item_code} for crafting {item_for_attacker.name}..."
                     )
                     added = self.attacker.add_farm_resource(
                         code=item_code, quantity=quantity, source=self
@@ -93,6 +101,22 @@ class Crafter:
         item = self.character.character.find_best_craft(
             skill=self.craft_skill, items=self.items, bank=self.bank
         )
+        if (
+            self.bank.get_quantity(
+                item_code=item.code, character_name=self.character.character.name
+            )
+            > 1
+        ):
+            print(f"{self.character.character.name} is recycling {item.name}...")
+            self.character.move(target=self.bank_map)
+            self.character.withdraw(code=item.code)
+            map = self.maps.closest(
+                character=self.character.character,
+                content_code=item.craft.skill,
+                content_type="workshop",
+            )
+            self.character.move(target=map)
+            self.character.recycle(code=item.code)
         self._craft(item=item)
 
         self.character.move(target=self.bank_map)
@@ -154,6 +178,7 @@ class Crafter:
             self.character.gather()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
+        original_quantity = quantity
         if not root:
             character_quantity = self.character.character.get_resource_quantity(
                 code=item.code
@@ -188,10 +213,16 @@ class Crafter:
             content_type="workshop",
         )
 
-        while self.character.character.get_resource_quantity(code=item.code) < quantity:
+        while (
+            self.character.character.get_resource_quantity(code=item.code)
+            < original_quantity
+        ):
             self.character.move(target=map)
-            self.character.craft(code=item.code)
-            print(f"{self.character.character.name} has crafted {item_code}...")
+            crafted = self.character.craft(code=item.code)
+            if crafted:
+                print(f"{self.character.character.name} has crafted {item.code}...")
+            else:
+                break
 
     def _calculate_collect(self, item: Item, quantity: int) -> int:
         character_quantity = self.character.character.get_resource_quantity(

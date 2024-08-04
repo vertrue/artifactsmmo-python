@@ -7,6 +7,8 @@ from models.item import AllItems
 
 from typing import AnyStr
 
+from time import sleep
+
 
 class MonsterResource:
     def __init__(self, code: AnyStr, quantity: int, monsters: AllMonsters) -> None:
@@ -60,17 +62,23 @@ class Attacker:
         self.farm_queue: FarmResources = FarmResources(monsters=self.monsters)
 
         self.action = None
-
         self.farm_xp_iter = 0
 
     def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
 
+    def reset(self):
+        self.action = None
+
     def run(self):
         self.action = self.pick_action()
         if self.action:
-            self.action()
+            try:
+                self.action()
+            except Exception:
+                sleep(60)
+                self.reset()
 
     def pick_action(self):
         if not self.has_task:
@@ -140,9 +148,7 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
         best_monster = self.character.character.find_best_monster(
-            monsters=self.monsters,
-            items=self.items,
-            bank=self.bank
+            monsters=self.monsters, items=self.items, bank=self.bank
         )
         self.check_better_equipment(monster=best_monster)
         closest_monster = self.maps.closest(
@@ -190,7 +196,9 @@ class Attacker:
 
     def do_task(self):
         print(
-            f"{self.character.character.name} is doing task {self.character.character.task_progress}/{self.character.character.task_total} {self.character.character.task}..."
+            f"{self.character.character.name} is doing task \
+                {self.character.character.task_progress}/{self.character.character.task_total} \
+                {self.character.character.task}..."
         )
         if (
             self.character.character.task_progress

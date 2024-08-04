@@ -10,6 +10,8 @@ from controller.attacker import Attacker
 
 from typing import AnyStr, Dict
 
+from time import sleep
+
 
 class Cooker:
     def __init__(
@@ -39,16 +41,21 @@ class Cooker:
 
         self.action = None
 
-        self.farm_xp_iter = 0
-
     def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
 
+    def reset(self):
+        self.action = None
+
     def run(self):
         self.action = self.pick_action()
         if self.action:
-            self.action()
+            try:
+                self.action()
+            except Exception:
+                sleep(60)
+                self.reset()
 
     def pick_action(self):
         item_to_sell = self.find_sell()
@@ -73,7 +80,7 @@ class Cooker:
             self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
             )
-            - 1
+            - 2
         )
         quantity = min(50, quantity, self.character.character.inventory_max_items)
 
@@ -87,7 +94,8 @@ class Cooker:
         price = self.bank.get_ge_sell_price(item=item)
 
         print(
-            f"{self.character.character.name} is selling {quantity} {item.name} for {price * quantity} gold ({price} for 1)..."
+            f"{self.character.character.name} is selling {quantity} {item.name} \
+                for {price * quantity} gold ({price} for 1)..."
         )
 
         ge_map = self.maps.closest(
@@ -101,7 +109,7 @@ class Cooker:
         bank_items = self.bank.get_all_items()
 
         for bank_item in bank_items.items:
-            if bank_item.quantity > 1:
+            if bank_item.quantity > 2:
                 item = self.items.get_one(code=bank_item.code)
                 if item.type not in ["resource", "currency"]:
                     return item

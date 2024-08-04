@@ -36,9 +36,11 @@ class MyCharacterAPI(MapAPI):
     def craft(self, code: AnyStr):
         method = f"/my/{self.character.name}/action/crafting"
 
-        self.post(method=method, body={"code": code})
+        response_code, response_data = self.post(method=method, body={"code": code})
 
         self._update_character()
+
+        return response_code == 200
 
     def unequip(self, slot: AnyStr) -> bool:
         method = f"/my/{self.character.name}/action/unequip"
@@ -110,6 +112,15 @@ class MyCharacterAPI(MapAPI):
         response_code, response_data = self.post(
             method=method, body={"quantity": quantity, "code": code, "price": price}
         )
+        self._update_character()
+
+    def recycle(self, code: AnyStr, quantity: int = 1):
+        method = f"/my/{self.character.name}/action/recycling"
+
+        response_code, response_data = self.post(
+            method=method, body={"quantity": quantity, "code": code}
+        )
+
         self._update_character()
 
     def _update_character(self) -> None:
