@@ -199,7 +199,7 @@ class Crafter:
         map = self.maps.closest(
             character=self.character.character,
             content_code=item.craft.skill,
-            content_type="workshop"
+            content_type="workshop",
         )
 
         while self.character.character.get_resource_quantity(code=item.code) < quantity:

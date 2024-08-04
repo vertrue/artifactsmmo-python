@@ -155,15 +155,12 @@ class Attacker:
     def check_better_equipment(self, monster: Monster):
         print(f"{self.character.character.name} is checking for better equipment...")
         _, picked_items = self.character.character.find_optimal_build(
-            monster=monster,
-            items=self.items,
-            bank=self.bank
+            monster=monster, items=self.items, bank=self.bank
         )
 
         for slot, item in picked_items.items():
             character_item = self.character.character.get_slot_item(
-                slot=slot,
-                items=self.items
+                slot=slot, items=self.items
             )
             if character_item is None and item is not None:
                 print(f"{self.character.character.name} is equiping {item.code}...")
@@ -190,7 +187,9 @@ class Attacker:
         self.character.accept_task()
 
     def do_task(self):
-        print(f"{self.character.character.name} is doing task {self.character.character.task_progress}/{self.character.character.task_total} {self.character.character.task}...")
+        print(
+            f"{self.character.character.name} is doing task {self.character.character.task_progress}/{self.character.character.task_total} {self.character.character.task}..."
+        )
         if (
             self.character.character.task_progress
             == self.character.character.task_total
@@ -226,7 +225,7 @@ class Attacker:
         can_beat, _ = self.character.character.find_optimal_build(
             monster=self.monsters.get(self.character.character.task),
             items=self.items,
-            bank=self.bank
+            bank=self.bank,
         )
 
         return can_beat
