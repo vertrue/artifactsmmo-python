@@ -107,17 +107,12 @@ class Cooker:
                 quantity=quantity,
                 reverved_by=self.character.character.name,
             )
-            quantity -= min(quantity, bank_quantity)
 
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
 
         if quantity <= character_quantity:
-            return
-        left = quantity - character_quantity
-
-        if left <= 0:
             return
 
         resource = self.resources.get_drops(drop=item.code)
@@ -126,8 +121,8 @@ class Cooker:
             character=self.character.character,
             content_code=resource.code,
         )
-        self.character.move(target=map)
-        for _ in range(left):
+        while self.character.character.get_resource_quantity(code=item.code) < quantity:
+            self.character.move(target=map)
             self.character.gather()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
@@ -162,8 +157,10 @@ class Cooker:
         map = self.maps.closest(
             character=self.character.character,
             content_code=item.craft.skill,
+            content_type="workshop"
         )
-        for _ in range(quantity):
+
+        while self.character.character.get_resource_quantity(code=item.code) < quantity:
             self.character.move(target=map)
             self.character.craft(code=item.code)
             print(f"{self.character.character.name} has crafted {item_code}...")
