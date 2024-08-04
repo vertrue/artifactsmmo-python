@@ -3,7 +3,7 @@ from interfaces import (
     gearcrafter_character,
     weaponcrafter_character,
     jewelrycrafter_character,
-    coocker_character,
+    cooker_character,
     monsters,
     maps,
     items,
@@ -51,8 +51,8 @@ jewelrycrafter = Crafter(
     attacker=attacker,
 )
 
-coocker = Cooker(
-    character=coocker_character,
+cooker = Cooker(
+    character=cooker_character,
     monsters=monsters,
     maps=maps,
     items=items,

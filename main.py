@@ -1,6 +1,6 @@
 import threading
 import time
-from characters import attacker, weaponcrafter, gearcrafter, jewelrycrafter, coocker
+from characters import attacker, weaponcrafter, gearcrafter, jewelrycrafter, cooker
 
 
 def run_attacker():
@@ -32,9 +32,9 @@ def run_jewelrycrafter():
 
 
 def run_cooker():
-    coocker.pre_run()
+    cooker.pre_run()
     while True:
-        coocker.run()
+        cooker.run()
         time.sleep(0.1)
 
 
@@ -43,16 +43,16 @@ if __name__ == "__main__":
     weaponcrafter_thread = threading.Thread(target=run_weaponcrafter)
     gearcrafter_thread = threading.Thread(target=run_gearcrafter)
     jewelrycrafter_thread = threading.Thread(target=run_jewelrycrafter)
-    coocker_thread = threading.Thread(target=run_cooker)
+    cooker_thread = threading.Thread(target=run_cooker)
 
     attacker_thread.start()
     weaponcrafter_thread.start()
     gearcrafter_thread.start()
     jewelrycrafter_thread.start()
-    coocker_thread.start()
+    cooker_thread.start()
 
     attacker_thread.join()
     weaponcrafter_thread.join()
     gearcrafter_thread.join()
     jewelrycrafter_thread.join()
-    coocker_thread.join()
+    cooker_thread.join()
