@@ -307,7 +307,7 @@ class Character:
             if players_hp < 0:
                 return False, i + 1, mobs_hp
 
-        return False, i + 1, mobs_hp
+        return False, i + 1, players_hp, mobs_hp
 
     def find_optimal_build(
         self, monster: Monster, items: AllItems, bank
@@ -355,7 +355,7 @@ class Character:
 
             picked_items[slot] = best_item
             if best_item:
-                picked_items["can_beat"], rounds, mobs_hp = self.can_beat_check(
+                picked_items["can_beat"], rounds, players_hp, mobs_hp = self.can_beat_check(
                     monster=monster,
                     item=best_item,
                     items=items,
@@ -380,11 +380,11 @@ class Character:
         if best_item is None:
             return candidate
 
-        _, best_item_rounds, best_item_mobs_hp = self.can_beat_check(
+        _, best_item_rounds, best_item_character_hp, best_item_mobs_hp = self.can_beat_check(
             monster=monster, item=best_item, items=items, picked_items=picked_items
         )
 
-        candidate_item_result, candidate_item_rounds, candidate_mobs_hp = (
+        candidate_item_result, candidate_item_rounds, candidate_item_character_hp, candidate_mobs_hp = (
             self.can_beat_check(
                 monster=monster, item=candidate, items=items, picked_items=picked_items
             )
@@ -397,6 +397,8 @@ class Character:
                 return best_item
         else:
             if candidate_mobs_hp < best_item_mobs_hp:
+                return candidate
+            elif candidate_item_character_hp > best_item_character_hp:
                 return candidate
             else:
                 return best_item
