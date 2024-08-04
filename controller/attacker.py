@@ -211,6 +211,7 @@ class Attacker:
         )
         self.character.move(target=task_map)
         self.character.complete_task()
+        self.character.accept_task()
 
     @property
     def has_farm_resources(self):

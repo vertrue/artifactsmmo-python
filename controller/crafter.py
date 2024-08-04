@@ -61,13 +61,6 @@ class Crafter:
             bank=self.bank,
             monsters=self.monsters,
         )
-        if item_for_attacker is None:
-            item_for_attacker = self.character.character.find_best_craft_for_attacker(
-                skill=self.craft_skill,
-                attacker=self.attacker.character.character,
-                items=self.items,
-                monsters=self.monsters,
-            )
         if item_for_attacker:
             calculate_mobs_resource = self._calculate_craft(item=item_for_attacker)
             if calculate_mobs_resource:
@@ -116,13 +109,6 @@ class Crafter:
             bank=self.bank,
             monsters=self.monsters,
         )
-        if item_for_attacker is None:
-            item_for_attacker = self.character.character.find_best_craft_for_attacker(
-                skill=self.craft_skill,
-                attacker=self.attacker.character.character,
-                items=self.items,
-                monsters=self.monsters,
-            )
         self._craft(item=item_for_attacker)
 
         self.character.move(target=self.bank_map)

@@ -103,7 +103,7 @@ class Cooker:
         for bank_item in bank_items.items:
             if bank_item.quantity > 1:
                 item = self.items.get_one(code=bank_item.code)
-                if item.type != "resource":
+                if item.type not in ["resource", "currency"]:
                     return item
 
         return None
