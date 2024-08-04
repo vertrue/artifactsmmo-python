@@ -156,16 +156,26 @@ class Character:
         except AttributeError:
             return 0
 
-    def find_best_monster(self, monsters: AllMonsters):
+    def find_best_monster(self, monsters: AllMonsters, items: AllItems, bank):
         filtered_monsters = monsters.filter()
 
         for monster in filtered_monsters:
-            if self.can_beat(monster=monster):
+            can_beat, _ = self.find_optimal_build(
+                monster=monster,
+                items=items,
+                bank=bank
+            )
+            if can_beat:
                 target_monster = monster
                 break
 
         for monster in filtered_monsters:
-            if self.can_beat(monster=monster) and monster.level > target_monster.level:
+            can_beat, _ = self.find_optimal_build(
+                monster=monster,
+                items=items,
+                bank=bank
+            )
+            if can_beat and monster.level > target_monster.level:
                 target_monster = monster
 
         return target_monster
@@ -293,7 +303,7 @@ class Character:
 
         return False, i + 1, mobs_hp
 
-    def find_optimal_build(self, monster: Monster, items: AllItems, bank):
+    def find_optimal_build(self, monster: Monster, items: AllItems, bank) -> tuple[bool, Dict[AnyStr, Item | int | bool | None]]:
         slots = [
             'weapon',
             'shield',
@@ -326,12 +336,8 @@ class Character:
             possible_items = [character_item]
 
             for item in bank_items:
-                if item.type == slot:
+                if item.type == slot or item.type == slot[:len(slot) - 1]:
                     possible_items += [item]
-
-            if possible_items == [None]:
-                picked_items[slot] = None
-                continue
 
             best_item = character_item
 
@@ -340,17 +346,25 @@ class Character:
                     best_item = self.pick_best(best_item=best_item, candidate=item, monster=monster, items=items, picked_items=picked_items)
 
             picked_items[slot] = best_item
-            picked_items["can_beat"], rounds, mobs_hp = self.can_beat_check(
-                monster=monster,
-                item=best_item,
-                items=items,
-                picked_items=picked_items
-            )
-            picked_items["rounds"] = min(picked_items["rounds"], rounds)
+            if best_item:
+                picked_items["can_beat"], rounds, mobs_hp = self.can_beat_check(
+                    monster=monster,
+                    item=best_item,
+                    items=items,
+                    picked_items=picked_items
+                )
+                picked_items["rounds"] = min(picked_items["rounds"], rounds)
 
-        return picked_items
+        can_beat = picked_items["can_beat"]
+        picked_items.pop("can_beat", None)
+        picked_items.pop("rounds", None)
+
+        return can_beat, picked_items
 
     def pick_best(self, best_item: Item, candidate: Item, monster: Monster, items: AllItems, picked_items: Dict):
+        if best_item is None:
+            return candidate
+
         _, best_item_rounds, best_item_mobs_hp = self.can_beat_check(
             monster=monster,
             item=best_item,

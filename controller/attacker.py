@@ -1,17 +1,17 @@
 from api.character import MyCharacterAPI
 from api.bank import BankAPI
 
-from models.monster import AllMonsters
+from models.monster import AllMonsters, Monster
 from models.map import AllMaps
 from models.item import AllItems
 
-from typing import AnyStr, List
+from typing import AnyStr
 
 
 class MonsterResource:
     def __init__(self, code: AnyStr, quantity: int, monsters: AllMonsters) -> None:
         self.resource = code
-        self.monster = monsters.get_drops(drop=code)
+        self.monster: Monster = monsters.get_drops(drop=code)
         self.quantity = quantity
 
 
@@ -63,10 +63,9 @@ class Attacker:
 
         self.farm_xp_iter = 0
 
+    def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
-        if not self.has_task:
-            self.accept_task()
 
     def run(self):
         self.action = self.pick_action()
@@ -74,6 +73,9 @@ class Attacker:
             self.action()
 
     def pick_action(self):
+        if not self.has_task:
+            self.accept_task()
+
         if self.has_farm_resources:
             return self.farm_resource
         elif self.can_complete_task and self.has_task:
@@ -106,6 +108,8 @@ class Attacker:
         print(
             f"{self.character.character.name} is farming {resource.resource}... {resource.quantity} {resource.resource} left"
         )
+        self.check_better_equipment(monster=resource.monster)
+
         resource_q_before = self.character.character.get_resource_quantity(
             code=resource.resource
         )
@@ -132,13 +136,13 @@ class Attacker:
         print(
             f"{self.character.character.name} is farming xp {self.farm_xp_iter} times..."
         )
-        self.check_better_equipment()
         if self.farm_xp_iter % 10 == 0:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
         best_monster = self.character.character.find_best_monster(
             monsters=self.monsters
         )
+        self.check_better_equipment(monster=best_monster)
         closest_monster = self.maps.closest(
             character=self.character.character, content_code=best_monster.code
         )
@@ -148,30 +152,34 @@ class Attacker:
 
         self.farm_xp_iter += 1
 
-    def check_better_equipment(self):
+    def check_better_equipment(self, monster: Monster):
         print(f"{self.character.character.name} is checking for better equipment...")
-        bank_items = self.bank.get_all_items().items
+        _, picked_items = self.character.character.find_optimal_build(
+            monster=monster,
+            items=self.items,
+            bank=self.bank
+        )
 
-        for item in bank_items:
-            bank_item = self.items.get_one(code=item.code)
+        for slot, item in picked_items.items():
             character_item = self.character.character.get_slot_item(
-                slot=bank_item.type, items=self.items
+                slot=slot,
+                items=self.items
             )
-
-            if self.character.character.get_slot(slot=bank_item.type) is None:
-                continue
-
-            if character_item is None:
+            if character_item is None and item is not None:
+                print(f"{self.character.character.name} is equiping {item.code}...")
                 self.character.move(target=self.bank_map)
-                self.character.withdraw(code=bank_item.code)
-                self.character.equip(code=bank_item.code, slot=bank_item.type)
-            elif bank_item.level > character_item.level:
-                if bank_item.level > self.character.character.level:
+                self.character.withdraw(code=item.code)
+                self.character.equip(code=item.code, slot=slot)
+
+            if character_item is not None and item is not None:
+                if character_item == item:
                     continue
+                print(f"{self.character.character.name} is equiping {item.code}...")
                 self.character.move(target=self.bank_map)
-                self.character.withdraw(code=bank_item.code)
-                self.character.unequip(slot=bank_item.type)
-                self.character.equip(code=bank_item.code, slot=bank_item.type)
+                self.character.withdraw(code=item.code)
+                self.character.unequip(slot=slot)
+                self.character.equip(code=item.code, slot=slot)
+                self.character.deposit(code=character_item.code)
 
     def accept_task(self):
         print(f"{self.character.character.name} is accepting new task...")
@@ -182,14 +190,14 @@ class Attacker:
         self.character.accept_task()
 
     def do_task(self):
-        print(f"{self.character.character.name} is doing task...")
-        print(self.character.character.task)
-        print(self.character.character.task_total)
+        print(f"{self.character.character.name} is doing task {self.character.character.task_progress}/{self.character.character.task_total} {self.character.character.task}...")
         if (
             self.character.character.task_progress
             == self.character.character.task_total
         ):
             self.complete_task()
+        monster = self.monsters.get(code=self.character.character.task)
+        self.check_better_equipment(monster=monster)
         monster_map = self.maps.closest(
             character=self.character.character,
             content_code=self.character.character.task,
@@ -215,6 +223,10 @@ class Attacker:
 
     @property
     def can_complete_task(self):
-        return self.character.character.can_beat(
-            monster=self.monsters.get(self.character.character.task)
+        can_beat, _ = self.character.character.find_optimal_build(
+            monster=self.monsters.get(self.character.character.task),
+            items=self.items,
+            bank=self.bank
         )
+
+        return can_beat

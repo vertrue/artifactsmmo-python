@@ -49,6 +49,8 @@ class BankAPI(BaseAPI):
 
         total_reserve = 0
         for reserve in self.reserves:
+            if reserve.reverved_by == character_name and reserve.code == item_code:
+                break
             if reserve.reverved_by != character_name and reserve.code == item_code:
                 total_reserve += reserve.quantity
 

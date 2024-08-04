@@ -42,10 +42,11 @@ class Crafter:
 
         self.farm_xp_iter = 0
 
+        self.wait_for_attacker = False
+
+    def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
-
-        self.wait_for_attacker = False
 
     def run(self):
         self.action = self.pick_action()

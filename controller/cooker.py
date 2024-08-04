@@ -41,6 +41,8 @@ class Cooker:
 
         self.farm_xp_iter = 0
 
+    def pre_run(self):
+        self.character.move(target=self.bank_map)
         self.character.deposit_all()
 
     def run(self):
