@@ -140,7 +140,9 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
         best_monster = self.character.character.find_best_monster(
-            monsters=self.monsters
+            monsters=self.monsters,
+            items=self.items,
+            bank=self.bank
         )
         self.check_better_equipment(monster=best_monster)
         closest_monster = self.maps.closest(
