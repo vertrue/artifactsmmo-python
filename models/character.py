@@ -294,7 +294,7 @@ class Character:
             mobs_hp -= player_attack
 
             if mobs_hp < 0:
-                return True, i + 1, mobs_hp
+                return True, i + 1, players_hp, mobs_hp
 
             # mob
             mob_attack = monster.attack_air * (1 - character.res_air / 100)
@@ -305,7 +305,7 @@ class Character:
             players_hp -= mob_attack
 
             if players_hp < 0:
-                return False, i + 1, mobs_hp
+                return False, i + 1, players_hp, mobs_hp
 
         return False, i + 1, players_hp, mobs_hp
 

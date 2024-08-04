@@ -70,6 +70,7 @@ class Cooker:
     def sell(self):
         item = self.find_sell()
         quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name) - 1
+        quantity = min(50, quantity, self.character.character.inventory_max_items)
 
         self.character.move(target=self.bank_map)
         self.character.deposit_all()

@@ -80,7 +80,6 @@ class MyCharacterAPI(MapAPI):
         response_code, response_data = self.post(
             method=method, body={"quantity": gold_quantity}
         )
-        print(response_code)
 
         self._update_character()
 
