@@ -51,7 +51,11 @@ class Cooker:
             self.action()
 
     def pick_action(self):
-        return self.farm_xp
+        item_to_sell = self.find_sell()
+        if item_to_sell:
+            return self.sell
+        else:
+            return self.farm_xp
 
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
@@ -63,28 +67,35 @@ class Cooker:
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
 
-    def craft_for_attacker(self):
-        print(
-            f"{self.character.character.name} is crafting for {self.attacker.character.character.name}..."
-        )
-        item_for_attacker = self.character.character.find_unique_craft(
-            skill=self.craft_skill,
-            attacker=self.attacker.character.character,
-            items=self.items,
-            bank=self.bank,
-            monsters=self.monsters,
-        )
-        if item_for_attacker is None:
-            item_for_attacker = self.character.character.find_best_craft_for_attacker(
-                skill=self.craft_skill,
-                attacker=self.attacker.character.character,
-                items=self.items,
-                monsters=self.monsters,
-            )
-        self._craft(item=item_for_attacker)
+    def sell(self):
+        item = self.find_sell()
+        quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name) - 1
 
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
+        self.character.withdraw(code=item.code, quantity=min(quantity, self.character.character.inventory_max_items))
+
+        price = self.bank.get_ge_sell_price(item=item)
+
+        print(f"{self.character.character.name} is selling {quantity} {item.name} for {price * quantity} gold ({price} for 1)...")
+
+        ge_map = self.maps.closest(
+            character=self.character.character,
+            content_type="grand_exchange",
+        )
+        self.character.move(target=ge_map)
+        self.character.sell(code=item.code, quantity=quantity, price=price)
+
+    def find_sell(self):
+        bank_items = self.bank.get_all_items()
+
+        for bank_item in bank_items.items:
+            if bank_item.quantity > 1:
+                item = self.items.get_one(code=bank_item.code)
+                if item.type != "resource":
+                    return item
+
+        return None
 
     def _collect(self, item: Item, quantity: int):
         character_quantity = self.character.character.get_resource_quantity(

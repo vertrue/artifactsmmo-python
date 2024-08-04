@@ -56,6 +56,10 @@ class BankAPI(BaseAPI):
 
         return max(response["data"][0]["quantity"] - total_reserve, 0)
 
+    def get_ge_sell_price(self, item: Item):
+        code, response = self.get(method=f"/ge/{item.code}")
+        return response["data"]["sell_price"]
+
     @staticmethod
     def get_map(character: Character, maps: AllMaps):
         return maps.closest(character=character, content_code="bank")
