@@ -69,16 +69,26 @@ class Cooker:
 
     def sell(self):
         item = self.find_sell()
-        quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name) - 1
+        quantity = (
+            self.bank.get_quantity(
+                item_code=item.code, character_name=self.character.character.name
+            )
+            - 1
+        )
         quantity = min(50, quantity, self.character.character.inventory_max_items)
 
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
-        self.character.withdraw(code=item.code, quantity=min(quantity, self.character.character.inventory_max_items))
+        self.character.withdraw(
+            code=item.code,
+            quantity=min(quantity, self.character.character.inventory_max_items),
+        )
 
         price = self.bank.get_ge_sell_price(item=item)
 
-        print(f"{self.character.character.name} is selling {quantity} {item.name} for {price * quantity} gold ({price} for 1)...")
+        print(
+            f"{self.character.character.name} is selling {quantity} {item.name} for {price * quantity} gold ({price} for 1)..."
+        )
 
         ge_map = self.maps.closest(
             character=self.character.character,

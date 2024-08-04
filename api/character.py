@@ -108,8 +108,7 @@ class MyCharacterAPI(MapAPI):
         method = f"/my/{self.character.name}/action/ge/sell"
 
         response_code, response_data = self.post(
-            method=method,
-            body={"quantity": quantity, "code": code, "price": price}
+            method=method, body={"quantity": quantity, "code": code, "price": price}
         )
         self._update_character()
 
