@@ -403,6 +403,7 @@ class Character:
             monster=monster, item=candidate, items=items, picked_items=picked_items
         )
 
+        # TODO: update picking process
         if candidate_item_result:
             if candidate_item_rounds < best_item_rounds:
                 return candidate
@@ -412,6 +413,8 @@ class Character:
                 return best_item
         else:
             if candidate_mobs_hp < best_item_mobs_hp:
+                return candidate
+            elif candidate_item_character_hp > best_item_character_hp:
                 return candidate
             else:
                 return best_item
@@ -494,17 +497,19 @@ class Character:
         items: AllItems,
         monsters: AllMonsters,
         quantity=1,
-        bank=None
+        bank=None,
+        root=True
     ) -> bool:
         item = items.get_one(code=code)
+
+        if bank and not self.root:
+            if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
+                return True
 
         if item.craft is None:
             if item.subtype == "mob":
                 return attacker.can_farm_resource(code=item.code, monsters=monsters)
             else:
-                if bank:
-                    if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
-                        return True
                 return item.level <= self.get_skill_level(skill=item.subtype)
         else:
             if item.craft.level > self.get_skill_level(skill=item.craft.skill):
@@ -518,7 +523,8 @@ class Character:
                     items=items,
                     monsters=monsters,
                     quantity=child_item.quantity,
-                    bank=bank
+                    bank=bank,
+                    root=False
                 )
                 can_craft_children = can_craft_children and can_craft_child
 
