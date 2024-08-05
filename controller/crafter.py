@@ -76,7 +76,7 @@ class Crafter:
                 for item_code, quantity in calculate_mobs_resource.items():
                     print(
                         f"{self.character.character.name} is commanding {self.attacker.character.character.name} \
-                            to collect {item_code} for crafting {item_for_attacker.name}..."
+to collect {item_code} for {item_for_attacker.name}..."
                     )
                     added = self.attacker.add_farm_resource(
                         code=item_code, quantity=quantity, source=self

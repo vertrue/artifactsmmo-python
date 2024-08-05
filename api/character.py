@@ -16,9 +16,9 @@ class MyCharacterAPI(MapAPI):
         if (self.character.x, self.character.y) == (target.x, target.y):
             return
 
-        print(f"{self.character.name} is moving to ({target.x}, {target.y})")
         method = f"/my/{self.character.name}/action/move"
         self.post(method=method, body={"x": target.x, "y": target.y})
+
         self._update_character()
 
     def fight(self):
@@ -47,6 +47,8 @@ class MyCharacterAPI(MapAPI):
 
         response_code, response_data = self.post(method=method, body={"slot": slot})
 
+        self._update_character()
+
         return response_code == 200
 
     def equip(self, code: AnyStr, slot: AnyStr) -> bool:
@@ -56,6 +58,8 @@ class MyCharacterAPI(MapAPI):
             method=method, body={"slot": slot, "code": code}
         )
 
+        self._update_character()
+
         return response_code == 200
 
     def deposit(self, code: AnyStr, quantity: int = 1):
@@ -64,6 +68,7 @@ class MyCharacterAPI(MapAPI):
         response_code, response_data = self.post(
             method=method, body={"quantity": quantity, "code": code}
         )
+
         self._update_character()
 
     def deposit_all(self):
@@ -98,12 +103,14 @@ class MyCharacterAPI(MapAPI):
         method = f"/my/{self.character.name}/action/task/new"
 
         response_code, response_data = self.post(method=method)
+
         self._update_character()
 
     def complete_task(self):
         method = f"/my/{self.character.name}/action/task/complete"
 
         response_code, response_data = self.post(method=method)
+
         self._update_character()
 
     def sell(self, code: AnyStr, quantity: int, price: int):
@@ -112,6 +119,7 @@ class MyCharacterAPI(MapAPI):
         response_code, response_data = self.post(
             method=method, body={"quantity": quantity, "code": code, "price": price}
         )
+
         self._update_character()
 
     def recycle(self, code: AnyStr, quantity: int = 1):

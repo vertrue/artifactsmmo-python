@@ -95,7 +95,7 @@ class Cooker:
 
         print(
             f"{self.character.character.name} is selling {quantity} {item.name} \
-                for {price * quantity} gold ({price} for 1)..."
+for {price * quantity} gold ({price} for 1)..."
         )
 
         ge_map = self.maps.closest(

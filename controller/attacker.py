@@ -108,7 +108,7 @@ class Attacker:
 
         diff_quantity = quantity - current_quantity
         self.farm_queue.add(code=code, quantity=diff_quantity, source=source)
-        print(f"{self.character.character.name} is now farming {monster.name}")
+        print(f"{self.character.character.name} is farming {monster.name}")
         return True
 
     def farm_resource(self):
@@ -197,8 +197,7 @@ class Attacker:
     def do_task(self):
         print(
             f"{self.character.character.name} is doing task \
-                {self.character.character.task_progress}/{self.character.character.task_total} \
-                {self.character.character.task}..."
+{self.character.character.task_progress}/{self.character.character.task_total} {self.character.character.task}..."
         )
         if (
             self.character.character.task_progress
@@ -215,7 +214,7 @@ class Attacker:
         self.character.fight()
 
     def complete_task(self):
-        print(f"{self.character.character.name} completed task...")
+        print(f"{self.character.character.name} has completed task...")
         task_map = self.maps.closest(
             character=self.character.character, content_type="tasks_master"
         )
