@@ -22,6 +22,7 @@ class Cooker:
         items: AllItems,
         resources: AllResources,
         craft_skill: AnyStr,
+        secondary_skill: AnyStr,
         attacker: Attacker,
     ) -> None:
         self.character = character
@@ -31,6 +32,7 @@ class Cooker:
         self.resources = resources
 
         self.craft_skill = craft_skill
+        self.secondary_skill = secondary_skill
 
         self.bank = BankAPI()
         self.bank_map = self.bank.get_map(
@@ -53,7 +55,8 @@ class Cooker:
         if self.action:
             try:
                 self.action()
-            except Exception:
+            except Exception as e:
+                print(e)
                 sleep(60)
                 self.reset()
 
@@ -66,6 +69,17 @@ class Cooker:
 
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
+        print(f"{self.character.character.name} is chopping woods...")
+        secondary_items = self.character.character.find_all_crafts(
+            skill=self.secondary_skill,
+            items=self.items,
+            bank=self.bank
+        )
+        for item in secondary_items:
+            self._craft(item=item, quantity=3)
+            self.character.move(target=self.bank_map)
+            self.character.deposit_all()
+
         item = self.character.character.find_best_craft(
             skill=self.craft_skill, items=self.items, bank=self.bank
         )
@@ -76,6 +90,10 @@ class Cooker:
 
     def sell(self):
         item = self.find_sell()
+        print(f"{self.character.character.name} is selling")
+        if item.code == "tasks_coin":
+            self.exchange_task_coin()
+            return
         quantity = (
             self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
@@ -105,12 +123,38 @@ for {price * quantity} gold ({price} for 1)..."
         self.character.move(target=ge_map)
         self.character.sell(code=item.code, quantity=quantity, price=price)
 
-    def find_sell(self):
+    def exchange_task_coin(self):
+        item = self.find_sell()
+        print(f"{self.character.character.name} is exchanging {item.name}")
+        quantity = (
+            self.bank.get_quantity(
+                item_code=item.code, character_name=self.character.character.name
+            ) // 3 * 3
+        )
+        quantity = min(50, quantity, self.character.character.inventory_max_items)
+        self.character.move(target=self.bank_map)
+        self.character.deposit_all()
+        self.character.withdraw(
+            code=item.code,
+            quantity=min(quantity, self.character.character.inventory_max_items),
+        )
+
+        task_map = self.maps.closest(
+            character=self.character.character, content_type="tasks_master"
+        )
+        self.character.move(target=task_map)
+        while quantity > 0:
+            self.character.exchange_task()
+            quantity -= 3
+
+    def find_sell(self) -> Item | None:
         bank_items = self.bank.get_all_items()
 
         for bank_item in bank_items.items:
             if bank_item.quantity > 2:
                 item = self.items.get_one(code=bank_item.code)
+                if item.code == "tasks_coin" and bank_item.quantity >= 3:
+                    return item
                 if item.type not in ["resource", "currency"]:
                     return item
 
@@ -156,6 +200,7 @@ for {price * quantity} gold ({price} for 1)..."
             self.character.gather()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
+        original_quantity = quantity
         if not root:
             character_quantity = self.character.character.get_resource_quantity(
                 code=item.code
@@ -190,10 +235,16 @@ for {price * quantity} gold ({price} for 1)..."
             content_type="workshop",
         )
 
-        while self.character.character.get_resource_quantity(code=item.code) < quantity:
+        while (
+            self.character.character.get_resource_quantity(code=item.code)
+            < original_quantity
+        ):
             self.character.move(target=map)
-            self.character.craft(code=item.code)
-            print(f"{self.character.character.name} has crafted {item_code}...")
+            crafted = self.character.craft(code=item.code)
+            if crafted:
+                print(f"{self.character.character.name} has crafted {item.code}...")
+            else:
+                break
 
     def _calculate_collect(self, item: Item, quantity: int) -> int:
         character_quantity = self.character.character.get_resource_quantity(

@@ -113,6 +113,13 @@ class MyCharacterAPI(MapAPI):
 
         self._update_character()
 
+    def exchange_task(self):
+        method = f"/my/{self.character.name}/action/task/exchange"
+
+        response_code, response_data = self.post(method=method)
+
+        self._update_character()
+
     def sell(self, code: AnyStr, quantity: int, price: int):
         method = f"/my/{self.character.name}/action/ge/sell"
 

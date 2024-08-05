@@ -436,7 +436,17 @@ class Character:
 
         return None
 
-    def find_best_craft(self, skill: AnyStr, items: AllItems, bank):
+    def find_all_crafts(self, skill: AnyStr, items: AllItems, bank) -> List[Item]:
+        filtered_items = items.filter(craft_skill=skill)
+
+        all_crafts = []
+        for item in filtered_items:
+            if self.can_craft_without_attacker(code=item.code, items=items, bank=bank):
+                all_crafts += [item]
+
+        return all_crafts
+
+    def find_best_craft(self, skill: AnyStr, items: AllItems, bank) -> Item:
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
