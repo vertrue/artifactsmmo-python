@@ -223,8 +223,11 @@ class Character:
     def unequiped_stats(character: "Character", item: Item):
         char = copy(character)
         for effect in item.effects:
-            current_value = getattr(char, effect.name)
-            setattr(char, effect.name, current_value - effect.value)
+            try:
+                current_value = getattr(char, effect.name)
+                setattr(char, effect.name, current_value - effect.value)
+            except AttributeError:
+                pass
 
         return char
 
@@ -338,7 +341,7 @@ class Character:
         for slot in slots:
             character_item = self.get_slot_item(slot=slot, items=items)
 
-            possible_items = [character_item]
+            possible_items = []
 
             for item in bank_items:
                 if item.type == slot or item.type == slot[: len(slot) - 1]:
@@ -409,8 +412,6 @@ class Character:
                 return best_item
         else:
             if candidate_mobs_hp < best_item_mobs_hp:
-                return candidate
-            elif candidate_item_character_hp > best_item_character_hp:
                 return candidate
             else:
                 return best_item
