@@ -249,20 +249,20 @@ class Character:
             if slot != "can_beat" and slot != "rounds" and picked_item is not None:
                 equiped_item = character.get_slot_item(slot=slot, items=items)
                 if equiped_item is None:
-                    equiped = self.equiped_stats(character=character, item=picked_item)
+                    equiped = character.equiped_stats(character=character, item=picked_item)
                 else:
-                    unequiped = self.unequiped_stats(
+                    unequiped = character.unequiped_stats(
                         character=character, item=equiped_item
                     )
-                    equiped = self.equiped_stats(character=unequiped, item=picked_item)
+                    equiped = character.equiped_stats(character=unequiped, item=picked_item)
                 character = equiped
 
         equiped_item = character.get_slot_item(slot=item.type, items=items)
         if equiped_item is None:
-            equiped = self.equiped_stats(character=character, item=item)
+            equiped = character.equiped_stats(character=character, item=item)
         else:
-            unequiped = self.unequiped_stats(character=character, item=equiped_item)
-            equiped = self.equiped_stats(character=unequiped, item=item)
+            unequiped = character.unequiped_stats(character=character, item=equiped_item)
+            equiped = character.equiped_stats(character=unequiped, item=item)
         character = equiped
 
         players_hp = character.hp
@@ -373,7 +373,7 @@ class Character:
 
     def pick_best(
         self,
-        best_item: Item,
+        best_item: Item | None,
         candidate: Item,
         monster: Monster,
         items: AllItems,
@@ -428,7 +428,7 @@ class Character:
 
         for item in filtered_items:
             if self.can_craft(
-                code=item.code, attacker=attacker, items=items, monsters=monsters
+                code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank
             ):
                 if not bank.has_item(item=item):
                     if attacker.get_slot_item(slot=item.type, items=items) != item:
@@ -467,12 +467,13 @@ class Character:
         attacker: "Character",
         items: AllItems,
         monsters: AllMonsters,
+        bank
     ):
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
             if self.can_craft(
-                code=item.code, attacker=attacker, items=items, monsters=monsters
+                code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank
             ):
                 if attacker.get_slot_item(slot=item.type, items=items) is None:
                     return item
@@ -488,6 +489,8 @@ class Character:
         attacker: "Character",
         items: AllItems,
         monsters: AllMonsters,
+        quantity=1,
+        bank=None
     ) -> bool:
         item = items.get_one(code=code)
 
@@ -495,6 +498,9 @@ class Character:
             if item.subtype == "mob":
                 return attacker.can_farm_resource(code=item.code, monsters=monsters)
             else:
+                if bank:
+                    if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
+                        return True
                 return item.level <= self.get_skill_level(skill=item.subtype)
         else:
             if item.craft.level > self.get_skill_level(skill=item.craft.skill):
@@ -507,6 +513,8 @@ class Character:
                     attacker=attacker,
                     items=items,
                     monsters=monsters,
+                    quantity=child_item.quantity,
+                    bank=bank
                 )
                 can_craft_children = can_craft_children and can_craft_child
 

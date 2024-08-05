@@ -2,6 +2,7 @@ from api.base import BaseAPI
 
 from models.bank import AllBankItems
 from models.map import AllMaps
+from models.item import AllItems
 from models.character import Character
 from models.item import Item
 
@@ -71,3 +72,30 @@ class BankAPI(BaseAPI):
     def has_item(self, item: Item) -> bool:
         code, _ = self.get(method="/my/bank/items", params={"item_code": item.code})
         return code == 200
+
+    def get_tool(self, skill: AnyStr, items: AllItems) -> Item | None:
+        all_data = self.get_all(method="/my/bank/items")
+        all_bank_items = AllBankItems(items=all_data)
+
+        best_tool = None
+        best_tool_reduce = 0
+        for bank_item in all_bank_items.items:
+            item = items.get_one(code=bank_item.code)
+            if item.subtype == "tool":
+                same_skill = False
+                skill_reduce = 0
+                for effect in item.effects:
+                    if effect.name == skill:
+                        same_skill = True
+                        skill_reduce = effect.value
+
+                if not same_skill:
+                    continue
+
+                if best_tool:
+                    if skill_reduce < best_tool_reduce:
+                        best_tool = item
+                else:
+                    best_tool = item
+
+        return best_tool

@@ -63,6 +63,12 @@ class Item:
             craft=craft,
         )
 
+    def get_effect_value(self, effect_name: AnyStr) -> int:
+        for effect in self.effects:
+            if effect == effect_name:
+                return effect.value
+        return 0
+
 
 class AllItems:
     def __init__(self, items: List[Dict]) -> None:

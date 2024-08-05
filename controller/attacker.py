@@ -76,9 +76,10 @@ class Attacker:
         if self.action:
             try:
                 self.action()
-            except Exception:
+            except Exception as e:
                 sleep(60)
                 self.reset()
+                print(e)
 
     def pick_action(self):
         if not self.has_task:

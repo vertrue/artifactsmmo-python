@@ -56,9 +56,10 @@ class Crafter:
         if self.action:
             try:
                 self.action()
-            except Exception:
+            except Exception as e:
                 sleep(60)
                 self.reset()
+                print(e)
 
     def pick_action(self):
         item_for_attacker = self.character.character.find_unique_craft(
@@ -139,6 +140,22 @@ to collect {item_code} for {item_for_attacker.name}..."
         self.character.deposit_all()
 
     def _collect(self, item: Item, quantity: int):
+        tool = self.bank.get_tool(skill=item.subtype, items=self.items)
+        # TODO: crafter leveling
+        if tool:
+            if self.character.character.level >= tool.level:
+                current_item = self.character.character.get_slot_item(slot=tool.type, items=self.items)
+                if current_item is None:
+                    self.character.move(target=self.bank_map)
+                    self.character.withdraw(code=tool.code)
+                    self.character.equip(code=tool.code, slot=tool.type)
+                elif current_item.get_effect_value(effect_name=item.subtype) < tool.get_effect_value(effect_name=item.subtype):
+                    self.character.move(target=self.bank_map)
+                    self.character.unequip(slot=tool.type)
+                    self.character.withdraw(code=tool.code)
+                    self.character.equip(code=tool.code, slot=tool.type)
+                    self.character.deposit(code=current_item.code)
+
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
