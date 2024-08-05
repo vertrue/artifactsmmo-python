@@ -502,7 +502,7 @@ class Character:
     ) -> bool:
         item = items.get_one(code=code)
 
-        if bank and not self.root:
+        if bank and not root:
             if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
                 return True
 
