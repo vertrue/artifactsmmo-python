@@ -232,8 +232,11 @@ class Character:
     def equiped_stats(character: "Character", item: Item):
         char = copy(character)
         for effect in item.effects:
-            current_value = getattr(char, effect.name)
-            setattr(char, effect.name, current_value + effect.value)
+            try:
+                current_value = getattr(char, effect.name)
+                setattr(char, effect.name, current_value + effect.value)
+            except AttributeError:
+                pass
 
         return char
 
