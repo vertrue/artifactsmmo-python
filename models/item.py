@@ -65,7 +65,7 @@ class Item:
 
     def get_effect_value(self, effect_name: AnyStr) -> int:
         for effect in self.effects:
-            if effect == effect_name:
+            if effect.name == effect_name:
                 return effect.value
         return 0
 

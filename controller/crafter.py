@@ -212,6 +212,9 @@ to collect {item_code} for {item_for_attacker.name}..."
                     )
                     quantity -= min(quantity, bank_quantity)
 
+        if quantity == 0:
+            return
+
         print(f"{self.character.character.name} is crafting {item.code}...")
         for part in item.craft.items:
             item_quantity = part.quantity

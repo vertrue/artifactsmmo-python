@@ -6,7 +6,6 @@ from models.item import Item, AllItems
 
 from copy import copy
 
-
 @dataclass
 class InventoryItem:
     slot: int
@@ -201,7 +200,7 @@ class Character:
                 * (1 - monster.res_water / 100)
             )
 
-            mobs_hp -= player_attack
+            mobs_hp -= round(player_attack)
 
             if mobs_hp < 0:
                 return True
@@ -212,7 +211,7 @@ class Character:
             mob_attack += monster.attack_fire * (1 - self.res_fire / 100)
             mob_attack += monster.attack_water * (1 - self.res_water / 100)
 
-            players_hp -= mob_attack
+            players_hp -= round(mob_attack)
 
             if players_hp < 0:
                 return False
@@ -246,7 +245,6 @@ class Character:
     def can_beat_check(
         self,
         monster: Monster,
-        item: Item,
         items: AllItems,
         picked_items: Dict[AnyStr, Item | int | bool | None],
     ):
@@ -262,14 +260,6 @@ class Character:
                     )
                     equiped = character.equiped_stats(character=unequiped, item=picked_item)
                 character = equiped
-
-        equiped_item = character.get_slot_item(slot=item.type, items=items)
-        if equiped_item is None:
-            equiped = character.equiped_stats(character=character, item=item)
-        else:
-            unequiped = character.unequiped_stats(character=character, item=equiped_item)
-            equiped = character.equiped_stats(character=unequiped, item=item)
-        character = equiped
 
         players_hp = character.hp
         mobs_hp = monster.hp
@@ -297,7 +287,7 @@ class Character:
                 * (1 - monster.res_water / 100)
             )
 
-            mobs_hp -= player_attack
+            mobs_hp -= round(player_attack)
 
             if mobs_hp < 0:
                 return True, i + 1, players_hp, mobs_hp
@@ -308,7 +298,7 @@ class Character:
             mob_attack += monster.attack_fire * (1 - character.res_fire / 100)
             mob_attack += monster.attack_water * (1 - character.res_water / 100)
 
-            players_hp -= mob_attack
+            players_hp -= round(mob_attack)
 
             if players_hp < 0:
                 return False, i + 1, players_hp, mobs_hp
@@ -319,7 +309,6 @@ class Character:
         self, monster: Monster, items: AllItems, bank
     ) -> tuple[bool, Dict[AnyStr, Item | int | bool | None]]:
         slots = [
-            "weapon",
             "shield",
             "helmet",
             "body_armor",
@@ -336,46 +325,89 @@ class Character:
         all_items = bank.get_all_items()
         bank_items = [items.get_one(item.code) for item in all_items.items]
 
-        picked_items = {"can_beat": self.can_beat(monster=monster), "rounds": 50}
+        # weapon
+        character_weapon = self.get_slot_item(slot="weapon", items=items)
+        possible_weapons = [character_weapon]
+        for item in bank_items:
+            if item.type == "weapon":
+                possible_weapons += [item]
 
-        for slot in slots:
-            character_item = self.get_slot_item(slot=slot, items=items)
+        best_build = {"can_beat": self.can_beat(monster=monster), "rounds": 100}
 
-            possible_items = []
+        for weapon in possible_weapons:
+            if weapon is None:
+                continue
 
-            for item in bank_items:
-                if item.type == slot or item.type == slot[: len(slot) - 1]:
-                    possible_items += [item]
+            picked_items = {"weapon": weapon}
 
-            best_item = character_item
+            for slot in slots:
+                character_item = self.get_slot_item(slot=slot, items=items)
 
-            for item in possible_items:
-                if item is not None:
-                    best_item = self.pick_best(
-                        best_item=best_item,
-                        candidate=item,
-                        monster=monster,
-                        items=items,
-                        picked_items=picked_items,
-                    )
+                possible_items = [character_item]
 
-            picked_items[slot] = best_item
-            if best_item:
-                picked_items["can_beat"], rounds, players_hp, mobs_hp = (
-                    self.can_beat_check(
-                        monster=monster,
-                        item=best_item,
-                        items=items,
-                        picked_items=picked_items,
-                    )
+                for item in bank_items:
+                    if item.type == slot or item.type == slot[: len(slot) - 1]:
+                        possible_items += [item]
+
+                if possible_items == [None]:
+                    continue
+
+                best_item_score = 0
+                best_item = character_item
+
+                for item in possible_items:
+                    if item is not None:
+                        item_score = self.item_score(
+                            monster=monster,
+                            item=item,
+                            weapon=weapon
+                        )
+                        if item_score > best_item_score:
+                            best_item = item
+                            best_item_score = item_score
+
+                picked_items[slot] = best_item
+
+            picked_items["can_beat"], rounds, _, _ = (
+                self.can_beat_check(
+                    monster=monster,
+                    items=items,
+                    picked_items=picked_items,
                 )
-                picked_items["rounds"] = min(picked_items["rounds"], rounds)
+            )
+            picked_items["rounds"] = rounds
 
-        can_beat = picked_items["can_beat"]
-        picked_items.pop("can_beat", None)
-        picked_items.pop("rounds", None)
+            if picked_items["can_beat"] and picked_items["rounds"] < best_build["rounds"]:
+                best_build = picked_items
 
-        return can_beat, picked_items
+        can_beat = best_build["can_beat"]
+        best_build.pop("can_beat", None)
+        best_build.pop("rounds", None)
+
+        return can_beat, best_build
+
+    def item_score(self, monster: Monster, item: Item, weapon: Item):
+        attack_coof = 5
+        dmg_coof = 3
+        res_coof = 1
+        # TODO: hp
+        score = 0
+        for effect in item.effects:
+            element = effect.name.split("_")[-1]
+            attack_element = f"attack_{element}"
+
+            if "attack_" in effect.name:
+                score += attack_coof * effect.value
+
+            if "dmg_" in effect.name:
+                if weapon.get_effect_value(effect_name=attack_element) > 0:
+                    score += dmg_coof * effect.value
+
+            if "res_" in effect.name:
+                if getattr(monster, f"attack_{element}") > 0:
+                    score += res_coof * effect.value
+
+        return score
 
     def pick_best(
         self,
