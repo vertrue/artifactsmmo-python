@@ -265,7 +265,7 @@ class Character:
             equiped = self.equiped_stats(character=unequiped, item=item)
         character = equiped
 
-        players_hp = self.hp
+        players_hp = character.hp
         mobs_hp = monster.hp
 
         for i in range(50):
