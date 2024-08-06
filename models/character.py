@@ -464,6 +464,13 @@ class Character:
                     if attacker.get_slot_item(slot=item.type, items=items) != item:
                         return item
 
+        for item in filtered_items:
+            if self.can_craft(
+                code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank
+            ):
+                if bank.get_quantity(item_code=item.code, character_name=self.name) < 5:
+                    return item
+
         return None
 
     def find_all_crafts(self, skill: AnyStr, items: AllItems, bank) -> List[Item]:

@@ -151,10 +151,11 @@ for {price * quantity} gold ({price} for 1)..."
         bank_items = self.bank.get_all_items()
 
         for bank_item in bank_items.items:
-            if bank_item.quantity > 2:
-                item = self.items.get_one(code=bank_item.code)
-                if item.code == "tasks_coin" and bank_item.quantity >= 3:
-                    return item
+            item = self.items.get_one(code=bank_item.code)
+            if item.code == "tasks_coin" and bank_item.quantity >= 3:
+                return item
+
+            if bank_item.quantity > 5:
                 if item.type not in ["resource", "currency", "tool"]:
                     return item
 
