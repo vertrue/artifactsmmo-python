@@ -62,7 +62,7 @@ class Attacker:
         self.farm_queue: FarmResources = FarmResources(monsters=self.monsters)
 
         self.action = None
-        self.farm_xp_iter = 0
+        self.iter = 0
 
     def pre_run(self):
         self.character.move(target=self.bank_map)
@@ -82,6 +82,9 @@ class Attacker:
                 print(e)
 
     def pick_action(self):
+        if self.iter % 30 == 0:
+            self.character.move(target=self.bank_map)
+            self.character.deposit_all()
         if not self.has_task:
             self.accept_task()
 
@@ -159,7 +162,7 @@ class Attacker:
         self.character.move(target=closest_monster)
         self.character.fight()
 
-        self.farm_xp_iter += 1
+        self.iter += 1
 
     def check_better_equipment(self, monster: Monster):
         print(f"{self.character.character.name} is checking for better equipment...")
@@ -214,6 +217,8 @@ class Attacker:
         self.character.move(target=monster_map)
         self.character.fight()
 
+        self.iter += 1
+
     def complete_task(self):
         print(f"{self.character.character.name} has completed task...")
         task_map = self.maps.closest(
@@ -222,6 +227,8 @@ class Attacker:
         self.character.move(target=task_map)
         self.character.complete_task()
         self.character.accept_task()
+        self.character.move(target=self.bank_map)
+        self.character.deposit_all()
 
     @property
     def has_farm_resources(self):
