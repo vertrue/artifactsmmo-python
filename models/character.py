@@ -5,6 +5,7 @@ from models.monster import Monster, AllMonsters
 from models.item import Item, AllItems
 
 from copy import copy
+from math import floor, ceil
 
 @dataclass
 class InventoryItem:
@@ -182,7 +183,7 @@ class Character:
         for i in range(1, 101):
             if i % 2 == 1:
                 # player
-                player_attack = round(
+                player_attack = floor(
                     self.attack_air
                     * (1 + self.dmg_air / 100)
                     * (1 - monster.res_air / 100)
@@ -191,7 +192,7 @@ class Character:
                 if mobs_hp <= 0:
                     return True
 
-                player_attack = round(
+                player_attack = floor(
                     self.attack_earth
                     * (1 + self.dmg_earth / 100)
                     * (1 - monster.res_earth / 100)
@@ -200,7 +201,7 @@ class Character:
                 if mobs_hp <= 0:
                     return True
 
-                player_attack = round(
+                player_attack = floor(
                     self.attack_fire
                     * (1 + self.dmg_fire / 100)
                     * (1 - monster.res_fire / 100)
@@ -209,7 +210,7 @@ class Character:
                 if mobs_hp <= 0:
                     return True
 
-                player_attack = round(
+                player_attack = floor(
                     self.attack_water
                     * (1 + self.dmg_water / 100)
                     * (1 - monster.res_water / 100)
@@ -219,22 +220,22 @@ class Character:
                     return True
             else:
                 # mob
-                mob_attack = round(monster.attack_air * (1 - self.res_air / 100))
+                mob_attack = ceil(monster.attack_air * (1 - self.res_air / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False
 
-                mob_attack = round(monster.attack_earth * (1 - self.res_earth / 100))
+                mob_attack = ceil(monster.attack_earth * (1 - self.res_earth / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False
 
-                mob_attack = round(monster.attack_fire * (1 - self.res_fire / 100))
+                mob_attack = ceil(monster.attack_fire * (1 - self.res_fire / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False
 
-                mob_attack = round(monster.attack_water * (1 - self.res_water / 100))
+                mob_attack = ceil(monster.attack_water * (1 - self.res_water / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False
@@ -290,7 +291,7 @@ class Character:
         for i in range(1, 101):
             if i % 2 == 1:
                 # player
-                player_attack = round(
+                player_attack = floor(
                     character.attack_air
                     * (1 + character.dmg_air / 100)
                     * (1 - monster.res_air / 100)
@@ -299,7 +300,7 @@ class Character:
                 if mobs_hp <= 0:
                     return True, i, players_hp, mobs_hp
 
-                player_attack = round(
+                player_attack = floor(
                     character.attack_earth
                     * (1 + character.dmg_earth / 100)
                     * (1 - monster.res_earth / 100)
@@ -308,7 +309,7 @@ class Character:
                 if mobs_hp <= 0:
                     return True, i, players_hp, mobs_hp
 
-                player_attack = round(
+                player_attack = floor(
                     character.attack_fire
                     * (1 + character.dmg_fire / 100)
                     * (1 - monster.res_fire / 100)
@@ -317,7 +318,7 @@ class Character:
                 if mobs_hp <= 0:
                     return True, i, players_hp, mobs_hp
 
-                player_attack = round(
+                player_attack = floor(
                     character.attack_water
                     * (1 + character.dmg_water / 100)
                     * (1 - monster.res_water / 100)
@@ -327,22 +328,22 @@ class Character:
                     return True, i, players_hp, mobs_hp
             else:
                 # mob
-                mob_attack = round(monster.attack_air * (1 - character.res_air / 100))
+                mob_attack = ceil(monster.attack_air * (1 - character.res_air / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
 
-                mob_attack = round(monster.attack_earth * (1 - character.res_earth / 100))
+                mob_attack = ceil(monster.attack_earth * (1 - character.res_earth / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
 
-                mob_attack = round(monster.attack_fire * (1 - character.res_fire / 100))
+                mob_attack = ceil(monster.attack_fire * (1 - character.res_fire / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
 
-                mob_attack = round(monster.attack_water * (1 - character.res_water / 100))
+                mob_attack = ceil(monster.attack_water * (1 - character.res_water / 100))
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
