@@ -77,7 +77,6 @@ class BaseAPI:
 
         return response_code, response_body
 
-    # @cooldown()
     def get_all(self, method: AnyStr, params: Dict = {}):
         params = {"page": 1, "size": 100}
 
@@ -91,5 +90,6 @@ class BaseAPI:
             params = {"page": i, "size": 100}
             _, response = self.get(method=method, params=params)
             all_data += response["data"]
+            sleep(0.1)
 
         return all_data

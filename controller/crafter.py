@@ -43,6 +43,14 @@ class Crafter:
         self.action = None
         self.wait_for_attacker = False
 
+        self.attacker_mode = Attacker(
+            character=self.character,
+            monsters=self.monsters,
+            maps=self.maps,
+            items=self.items,
+            is_crafter=True
+        )
+
     def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
@@ -62,6 +70,9 @@ class Crafter:
                 print(e)
 
     def pick_action(self):
+        if self.wait_for_attacker:
+            return self.attacker_mode.pick_action()
+
         item_for_attacker = self.character.character.find_unique_craft(
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
@@ -76,10 +87,9 @@ class Crafter:
                     return self.farm_xp
                 for item_code, quantity in calculate_mobs_resource.items():
                     print(
-                        f"{self.character.character.name} is commanding {self.attacker.character.character.name} \
-to collect {item_code} for {item_for_attacker.name}..."
+                        f"{self.character.character.name} is collecting {item_code} for {item_for_attacker.name}..."
                     )
-                    added = self.attacker.add_farm_resource(
+                    added = self.attacker_mode.add_farm_resource(
                         code=item_code, quantity=quantity, source=self
                     )
                     if added:
@@ -89,8 +99,8 @@ to collect {item_code} for {item_for_attacker.name}..."
                             reverved_by=self.character.character.name,
                         )
                         self.wait_for_attacker = True
-                        return self.farm_xp
-                return self.farm_xp
+                        return self.attacker_mode.pick_action()
+                return self.attacker_mode.pick_action()
             else:
                 self.wait_for_attacker = False
                 return self.craft_for_attacker
@@ -125,7 +135,7 @@ to collect {item_code} for {item_for_attacker.name}..."
 
     def craft_for_attacker(self):
         print(
-            f"{self.character.character.name} is crafting for {self.attacker.character.character.name}..."
+            f"{self.character.character.name} is crafting for attackers..."
         )
         item_for_attacker = self.character.character.find_unique_craft(
             skill=self.craft_skill,

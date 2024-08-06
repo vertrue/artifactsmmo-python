@@ -361,6 +361,8 @@ class Character:
         for weapon in possible_weapons:
             if weapon is None:
                 continue
+            if weapon.level > self.level:
+                continue
 
             picked_items = {"weapon": weapon}
             picked_items_amount = {}
@@ -373,6 +375,8 @@ class Character:
                 possible_items = [character_item]
 
                 for item in bank_items:
+                    if item.level > self.level:
+                        continue
                     if item.type == slot or item.type == slot[: len(slot) - 1]:
                         if picked_items_amount[item.code] < bank_items_amount[item.code]:
                             possible_items += [item]
@@ -396,10 +400,11 @@ class Character:
 
                 picked_items[slot] = best_item
 
-                try:
-                    picked_items_amount[best_item.code] += 1
-                except KeyError:
-                    picked_items_amount[best_item.code] = 1
+                if best_item:
+                    try:
+                        picked_items_amount[best_item.code] += 1
+                    except KeyError:
+                        picked_items_amount[best_item.code] = 1
 
             picked_items["can_beat"], rounds, _, _ = (
                 self.can_beat_check(

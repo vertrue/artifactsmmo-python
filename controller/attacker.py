@@ -48,6 +48,7 @@ class Attacker:
         monsters: AllMonsters,
         maps: AllMaps,
         items: AllItems,
+        is_crafter: bool = False
     ) -> None:
         self.character = character
         self.monsters = monsters
@@ -60,6 +61,8 @@ class Attacker:
         )
 
         self.farm_queue: FarmResources = FarmResources(monsters=self.monsters)
+
+        self.is_crafter = is_crafter
 
         self.action = None
         self.iter = 0
@@ -85,13 +88,16 @@ class Attacker:
         if self.iter % 30 == 0:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
-        if not self.has_task:
+        if not self.has_task and not self.is_crafter:
             self.accept_task()
 
         if self.has_farm_resources:
             return self.farm_resource
-        elif self.can_complete_task and self.has_task:
-            return self.do_task
+        elif not self.is_crafter:
+            if self.can_complete_task and self.has_task:
+                return self.do_task
+            else:
+                return self.farm_xp
         else:
             return self.farm_xp
 
@@ -107,7 +113,13 @@ class Attacker:
                 f"{self.character.character.name} is farming {self.farm_queue.get().resource} and cannot add new queue"
             )
             return False
-        if not self.character.character.can_beat(monster):
+
+        can_beat, _ = self.character.character.find_optimal_build(
+            monster=monster,
+            items=self.items,
+            bank=self.bank
+        )
+        if not can_beat:
             return False
 
         diff_quantity = quantity - current_quantity
@@ -146,11 +158,8 @@ class Attacker:
 
     def farm_xp(self):
         print(
-            f"{self.character.character.name} is farming xp {self.farm_xp_iter} times..."
+            f"{self.character.character.name} is farming xp {self.iter} times..."
         )
-        if self.farm_xp_iter % 10 == 0:
-            self.character.move(target=self.bank_map)
-            self.character.deposit_all()
         best_monster = self.character.character.find_best_monster(
             monsters=self.monsters, items=self.items, bank=self.bank
         )
