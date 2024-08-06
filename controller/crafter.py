@@ -100,6 +100,7 @@ class Crafter:
                         )
                         self.wait_for_attacker = True
                         return self.attacker_mode.pick_action()
+                print(f"{self.character.character.name} does not have level for collecting {item_code} for {item_for_attacker.name}...")
                 return self.attacker_mode.pick_action()
             else:
                 self.wait_for_attacker = False
