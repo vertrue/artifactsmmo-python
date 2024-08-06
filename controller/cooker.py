@@ -155,7 +155,7 @@ for {price * quantity} gold ({price} for 1)..."
             if item.code == "tasks_coin" and bank_item.quantity >= 3:
                 return item
 
-            if bank_item.quantity >= 10:
+            if bank_item.quantity > 2:
                 if item.type not in ["resource", "currency", "tool"]:
                     return item
 
