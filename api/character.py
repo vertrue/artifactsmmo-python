@@ -23,7 +23,7 @@ class MyCharacterAPI(MapAPI):
 
     def fight(self):
         method = f"/my/{self.character.name}/action/fight"
-        self.post(method=method)
+        response_code, response_data = self.post(method=method)
 
         self._update_character()
 

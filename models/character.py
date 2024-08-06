@@ -264,46 +264,67 @@ class Character:
         players_hp = character.hp
         mobs_hp = monster.hp
 
-        for i in range(50):
-            # player
-            player_attack = (
-                character.attack_air
-                * (1 + character.dmg_air / 100)
-                * (1 - monster.res_air / 100)
-            )
-            player_attack += (
-                character.attack_earth
-                * (1 + character.dmg_earth / 100)
-                * (1 - monster.res_earth / 100)
-            )
-            player_attack += (
-                character.attack_fire
-                * (1 + character.dmg_fire / 100)
-                * (1 - monster.res_fire / 100)
-            )
-            player_attack += (
-                character.attack_water
-                * (1 + character.dmg_water / 100)
-                * (1 - monster.res_water / 100)
-            )
+        for i in range(1, 101):
+            if i % 2 == 1:
+                # player
+                player_attack = round(
+                    character.attack_air
+                    * (1 + character.dmg_air / 100)
+                    * (1 - monster.res_air / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True, i, players_hp, mobs_hp
 
-            mobs_hp -= round(player_attack)
+                player_attack = round(
+                    character.attack_earth
+                    * (1 + character.dmg_earth / 100)
+                    * (1 - monster.res_earth / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True, i, players_hp, mobs_hp
 
-            if mobs_hp < 0:
-                return True, i + 1, players_hp, mobs_hp
+                player_attack = round(
+                    character.attack_fire
+                    * (1 + character.dmg_fire / 100)
+                    * (1 - monster.res_fire / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True, i, players_hp, mobs_hp
 
-            # mob
-            mob_attack = monster.attack_air * (1 - character.res_air / 100)
-            mob_attack += monster.attack_earth * (1 - character.attack_earth / 100)
-            mob_attack += monster.attack_fire * (1 - character.res_fire / 100)
-            mob_attack += monster.attack_water * (1 - character.res_water / 100)
+                player_attack = round(
+                    character.attack_water
+                    * (1 + character.dmg_water / 100)
+                    * (1 - monster.res_water / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True, i, players_hp, mobs_hp
+            else:
+                # mob
+                mob_attack = round(monster.attack_air * (1 - character.res_air / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False, i, players_hp, mobs_hp
 
-            players_hp -= round(mob_attack)
+                mob_attack = round(monster.attack_earth * (1 - character.res_earth / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False, i, players_hp, mobs_hp
 
-            if players_hp < 0:
-                return False, i + 1, players_hp, mobs_hp
+                mob_attack = round(monster.attack_fire * (1 - character.res_fire / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False, i, players_hp, mobs_hp
 
-        return False, i + 1, players_hp, mobs_hp
+                mob_attack = round(monster.attack_water * (1 - character.res_water / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False, i, players_hp, mobs_hp
+
+        return False, i, players_hp, mobs_hp
 
     def find_optimal_build(
         self, monster: Monster, items: AllItems, bank
@@ -323,6 +344,9 @@ class Character:
         ]
 
         all_items = bank.get_all_items()
+        bank_items_amount = {}
+        for item in all_items.items:
+            bank_items_amount[item.code] = item.quantity
         bank_items = [items.get_one(item.code) for item in all_items.items]
 
         # weapon
@@ -339,6 +363,9 @@ class Character:
                 continue
 
             picked_items = {"weapon": weapon}
+            picked_items_amount = {}
+            for item in all_items.items:
+                picked_items_amount[item.code] = 0
 
             for slot in slots:
                 character_item = self.get_slot_item(slot=slot, items=items)
@@ -347,7 +374,8 @@ class Character:
 
                 for item in bank_items:
                     if item.type == slot or item.type == slot[: len(slot) - 1]:
-                        possible_items += [item]
+                        if picked_items_amount[item.code] < bank_items_amount[item.code]:
+                            possible_items += [item]
 
                 if possible_items == [None]:
                     continue
@@ -367,6 +395,11 @@ class Character:
                             best_item_score = item_score
 
                 picked_items[slot] = best_item
+
+                try:
+                    picked_items_amount[best_item.code] += 1
+                except KeyError:
+                    picked_items_amount[best_item.code] = 1
 
             picked_items["can_beat"], rounds, _, _ = (
                 self.can_beat_check(
@@ -408,48 +441,6 @@ class Character:
                     score += res_coof * effect.value
 
         return score
-
-    def pick_best(
-        self,
-        best_item: Item | None,
-        candidate: Item,
-        monster: Monster,
-        items: AllItems,
-        picked_items: Dict,
-    ):
-        if best_item is None:
-            return candidate
-
-        _, best_item_rounds, best_item_character_hp, best_item_mobs_hp = (
-            self.can_beat_check(
-                monster=monster, item=best_item, items=items, picked_items=picked_items
-            )
-        )
-
-        (
-            candidate_item_result,
-            candidate_item_rounds,
-            candidate_item_character_hp,
-            candidate_mobs_hp,
-        ) = self.can_beat_check(
-            monster=monster, item=candidate, items=items, picked_items=picked_items
-        )
-
-        # TODO: update picking process
-        if candidate_item_result:
-            if candidate_item_rounds < best_item_rounds:
-                return candidate
-            elif candidate_item_character_hp > best_item_character_hp:
-                return candidate
-            else:
-                return best_item
-        else:
-            if candidate_mobs_hp < best_item_mobs_hp:
-                return candidate
-            elif candidate_item_character_hp > best_item_character_hp:
-                return candidate
-            else:
-                return best_item
 
     def can_farm_resource(self, code: AnyStr, monsters: AllMonsters) -> bool:
         monster = monsters.get_drops(drop=code)
