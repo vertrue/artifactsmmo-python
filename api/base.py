@@ -51,9 +51,14 @@ class BaseAPI:
     def post(self, method: AnyStr, body: Dict = {}) -> Tuple[int, Dict]:
         url = self.host + method
 
-        response = requests.post(
-            url, headers=self.headers, data=json.dumps(body), verify=False
-        )
+        while True:
+            try:
+                response = requests.post(
+                    url, headers=self.headers, data=json.dumps(body), verify=False
+                )
+                break
+            except requests.exceptions.ConnectionError:
+                sleep(1)
 
         response_code = response.status_code
         try:
@@ -69,11 +74,15 @@ class BaseAPI:
     @cooldown()
     def get(self, method: AnyStr, params: Dict = {}) -> Tuple[int, Dict]:
         url = self.host + method
-        response = requests.get(url, headers=self.headers, params=params, verify=False)
+        while True:
+            try:
+                response = requests.get(url, headers=self.headers, params=params, verify=False)
+                break
+            except requests.exceptions.ConnectionError:
+                sleep(1)
 
         response_code = response.status_code
         response_body = json.loads(response.text)
-        # print(response_code, "GET", url)
 
         return response_code, response_body
 

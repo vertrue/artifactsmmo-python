@@ -86,13 +86,13 @@ class Crafter:
                 if self.wait_for_attacker:
                     return self.farm_xp
                 for item_code, quantity in calculate_mobs_resource.items():
-                    print(
-                        f"{self.character.character.name} is collecting {item_code} for {item_for_attacker.name}..."
-                    )
                     added = self.attacker_mode.add_farm_resource(
                         code=item_code, quantity=quantity, source=self
                     )
                     if added:
+                        print(
+                            f"{self.character.character.name} is collecting {item_code} for {item_for_attacker.name}..."
+                        )
                         self.bank.add_reserve(
                             item_code=item_code,
                             quantity=quantity,
