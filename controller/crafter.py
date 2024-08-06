@@ -112,7 +112,7 @@ class Crafter:
         print(f"{self.character.character.name} is farming xp...")
         item = self.character.character.find_best_craft_with_attacker(
             skill=self.craft_skill,
-            attacker=self.attacker_mode,
+            attacker=self.attacker_mode.character,
             items=self.items,
             monsters=self.monsters,
             bank=self.bank
@@ -218,6 +218,8 @@ class Crafter:
                     character=self.character.character,
                     content_code=monster.code
                 )
+
+                self.attacker_mode.check_better_equipment(monster=monster)
                 self.character.move(target=monster_map)
                 self.character.fight()
 
