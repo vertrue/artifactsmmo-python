@@ -495,6 +495,21 @@ class Character:
 
         return best_item
 
+    def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, bank) -> Item:
+        filtered_items = items.filter(craft_skill=skill)
+
+        for item in filtered_items:
+            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank):
+                best_item = item
+                break
+
+        for item in filtered_items:
+            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank):
+                if item.level > best_item.level:
+                    best_item = item
+
+        return best_item
+
     def find_best_craft_for_attacker(
         self,
         skill: AnyStr,

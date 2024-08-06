@@ -110,8 +110,12 @@ class Crafter:
 
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
-        item = self.character.character.find_best_craft(
-            skill=self.craft_skill, items=self.items, bank=self.bank
+        item = self.character.character.find_best_craft_with_attacker(
+            skill=self.craft_skill,
+            attacker=self.attacker_mode,
+            items=self.items,
+            monsters=self.monsters,
+            bank=self.bank
         )
         if (
             self.bank.get_quantity(
@@ -151,21 +155,6 @@ class Crafter:
         self.character.deposit_all()
 
     def _collect(self, item: Item, quantity: int):
-        tool = self.bank.get_tool(skill=item.subtype, items=self.items)
-        # TODO: crafter leveling
-        if tool:
-            if self.character.character.level >= tool.level:
-                current_item = self.character.character.get_slot_item(slot=tool.type, items=self.items)
-                if current_item is None:
-                    self.character.move(target=self.bank_map)
-                    self.character.withdraw(code=tool.code)
-                    self.character.equip(code=tool.code, slot=tool.type)
-                elif current_item.get_effect_value(effect_name=item.subtype) < tool.get_effect_value(effect_name=item.subtype):
-                    self.character.move(target=self.bank_map)
-                    self.character.unequip(slot=tool.type)
-                    self.character.withdraw(code=tool.code)
-                    self.character.equip(code=tool.code, slot=tool.type)
-                    self.character.deposit(code=current_item.code)
 
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
@@ -195,15 +184,42 @@ class Crafter:
         if quantity <= character_quantity:
             return
 
-        resource = self.resources.get_drops(drop=item.code)
+        # TODO: crafter leveling
+        if item.subtype == "resource":
+            tool = self.bank.get_tool(skill=item.subtype, items=self.items)
+            if tool:
+                if self.character.character.level >= tool.level:
+                    current_item = self.character.character.get_slot_item(slot=tool.type, items=self.items)
+                    if current_item is None:
+                        self.character.move(target=self.bank_map)
+                        self.character.withdraw(code=tool.code)
+                        self.character.equip(code=tool.code, slot=tool.type)
+                    elif current_item.get_effect_value(effect_name=item.subtype) < tool.get_effect_value(effect_name=item.subtype):
+                        self.character.move(target=self.bank_map)
+                        self.character.unequip(slot=tool.type)
+                        self.character.withdraw(code=tool.code)
+                        self.character.equip(code=tool.code, slot=tool.type)
+                        self.character.deposit(code=current_item.code)
 
-        map = self.maps.closest(
-            character=self.character.character,
-            content_code=resource.code,
-        )
-        while self.character.character.get_resource_quantity(code=item.code) < quantity:
-            self.character.move(target=map)
-            self.character.gather()
+            resource = self.resources.get_drops(drop=item.code)
+
+            map = self.maps.closest(
+                character=self.character.character,
+                content_code=resource.code,
+            )
+            while self.character.character.get_resource_quantity(code=item.code) < quantity:
+                self.character.move(target=map)
+                self.character.gather()
+
+        elif item.subtype == "mob":
+            while self.character.character.get_resource_quantity(code=item.code) < quantity:
+                monster = self.monsters.get_drops(drop=item.code)
+                monster_map = self.maps.closest(
+                    character=self.character.character,
+                    content_code=monster.code
+                )
+                self.character.move(target=monster_map)
+                self.character.fight()
 
     def _craft(self, item: Item, quantity: int = 1, root: bool = True):
         original_quantity = quantity
