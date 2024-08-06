@@ -84,7 +84,7 @@ class Crafter:
             calculate_mobs_resource = self._calculate_craft(item=item_for_attacker)
             if calculate_mobs_resource:
                 if self.wait_for_attacker:
-                    return self.farm_xp
+                    return self.attacker_mode.pick_action()
                 for item_code, quantity in calculate_mobs_resource.items():
                     added = self.attacker_mode.add_farm_resource(
                         code=item_code, quantity=quantity, source=self
@@ -112,7 +112,7 @@ class Crafter:
         print(f"{self.character.character.name} is farming xp...")
         item = self.character.character.find_best_craft_with_attacker(
             skill=self.craft_skill,
-            attacker=self.attacker_mode.character,
+            attacker=self.attacker_mode.character.character,
             items=self.items,
             monsters=self.monsters,
             bank=self.bank
@@ -184,8 +184,8 @@ class Crafter:
         if quantity <= character_quantity:
             return
 
-        # TODO: crafter leveling
-        if item.subtype == "resource":
+        if item.subtype != "mob":
+            # TODO: crafter leveling
             tool = self.bank.get_tool(skill=item.subtype, items=self.items)
             if tool:
                 if self.character.character.level >= tool.level:
@@ -210,8 +210,7 @@ class Crafter:
             while self.character.character.get_resource_quantity(code=item.code) < quantity:
                 self.character.move(target=map)
                 self.character.gather()
-
-        elif item.subtype == "mob":
+        else:
             while self.character.character.get_resource_quantity(code=item.code) < quantity:
                 monster = self.monsters.get_drops(drop=item.code)
                 monster_map = self.maps.closest(

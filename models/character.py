@@ -175,46 +175,69 @@ class Character:
 
         return target_monster
 
-    def can_beat(self, monster: Monster):
+    def can_beat(self, monster: Monster) -> bool:
         players_hp = self.hp
         mobs_hp = monster.hp
 
-        for _ in range(50):
-            # player
-            player_attack = (
-                self.attack_air * (1 + self.dmg_air / 100) * (1 - monster.res_air / 100)
-            )
-            player_attack += (
-                self.attack_earth
-                * (1 + self.dmg_earth / 100)
-                * (1 - monster.res_earth / 100)
-            )
-            player_attack += (
-                self.attack_fire
-                * (1 + self.dmg_fire / 100)
-                * (1 - monster.res_fire / 100)
-            )
-            player_attack += (
-                self.attack_water
-                * (1 + self.dmg_water / 100)
-                * (1 - monster.res_water / 100)
-            )
+        for i in range(1, 101):
+            if i % 2 == 1:
+                # player
+                player_attack = round(
+                    self.attack_air
+                    * (1 + self.dmg_air / 100)
+                    * (1 - monster.res_air / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True
 
-            mobs_hp -= round(player_attack)
+                player_attack = round(
+                    self.attack_earth
+                    * (1 + self.dmg_earth / 100)
+                    * (1 - monster.res_earth / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True
 
-            if mobs_hp < 0:
-                return True
+                player_attack = round(
+                    self.attack_fire
+                    * (1 + self.dmg_fire / 100)
+                    * (1 - monster.res_fire / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True
 
-            # mob
-            mob_attack = monster.attack_air * (1 - self.res_air / 100)
-            mob_attack += monster.attack_earth * (1 - self.attack_earth / 100)
-            mob_attack += monster.attack_fire * (1 - self.res_fire / 100)
-            mob_attack += monster.attack_water * (1 - self.res_water / 100)
+                player_attack = round(
+                    self.attack_water
+                    * (1 + self.dmg_water / 100)
+                    * (1 - monster.res_water / 100)
+                )
+                mobs_hp -= player_attack
+                if mobs_hp <= 0:
+                    return True
+            else:
+                # mob
+                mob_attack = round(monster.attack_air * (1 - self.res_air / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False
 
-            players_hp -= round(mob_attack)
+                mob_attack = round(monster.attack_earth * (1 - self.res_earth / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False
 
-            if players_hp < 0:
-                return False
+                mob_attack = round(monster.attack_fire * (1 - self.res_fire / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False
+
+                mob_attack = round(monster.attack_water * (1 - self.res_water / 100))
+                players_hp -= mob_attack
+                if players_hp <= 0:
+                    return False
 
         return False
 
@@ -447,9 +470,14 @@ class Character:
 
         return score
 
-    def can_farm_resource(self, code: AnyStr, monsters: AllMonsters) -> bool:
+    def can_farm_resource(self, code: AnyStr, items: AllItems, monsters: AllMonsters, bank) -> bool:
         monster = monsters.get_drops(drop=code)
-        return self.can_beat(monster)
+        can_beat, _ = self.find_optimal_build(
+            monster=monster,
+            items=items,
+            bank=bank,
+        )
+        return can_beat
 
     def find_unique_craft(
         self,
@@ -550,7 +578,7 @@ class Character:
 
         if item.craft is None:
             if item.subtype == "mob":
-                return attacker.can_farm_resource(code=item.code, monsters=monsters)
+                return attacker.can_farm_resource(code=item.code, items=items, monsters=monsters, bank=bank)
             else:
                 return item.level <= self.get_skill_level(skill=item.subtype)
         else:

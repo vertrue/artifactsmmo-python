@@ -88,6 +88,7 @@ class Attacker:
         if self.iter % 30 == 0:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
+
         if not self.has_task and not self.is_crafter:
             self.accept_task()
 
@@ -148,13 +149,14 @@ class Attacker:
         resource_q_after = self.character.character.get_resource_quantity(
             code=resource.resource
         )
-
         if resource_q_before != resource_q_after:
             resource_diff = resource_q_after - resource_q_before
             result = self.farm_queue.farmed(quantity=resource_diff)
             if result:
                 self.character.move(target=self.bank_map)
                 self.character.deposit_all()
+
+        self.iter += 1
 
     def farm_xp(self):
         print(
