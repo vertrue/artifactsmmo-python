@@ -444,7 +444,6 @@ class Character:
 
         can_beat = best_build["can_beat"]
         best_build.pop("can_beat", None)
-        best_build.pop("rounds", None)
 
         return can_beat, best_build
 
@@ -491,11 +490,12 @@ class Character:
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
+            if bank.has_item(item=item):
+                continue
             if self.can_craft(
                 code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank
             ):
-                if not bank.has_item(item=item):
-                    return item
+                return item
 
         return None
 
@@ -530,12 +530,54 @@ class Character:
         for item in filtered_items:
             if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank):
                 best_item = item
+                best_time = self.calculate_time_to_craft(
+                    item=best_item,
+                    attacker=attacker,
+                    items=items,
+                    monsters=monsters,
+                    bank=bank
+                )
                 break
 
         for item in filtered_items:
             if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank):
-                if item.level > best_item.level:
-                    best_item = item
+                item_time = self.calculate_time_to_craft(
+                    item=item,
+                    attacker=attacker,
+                    items=items,
+                    monsters=monsters,
+                    bank=bank
+                )
+
+                if best_item.level < item.level:
+                    xp_diff = (item.level - best_item.level) / 2.5
+
+                    # calculation!!
+                    # item_xp_per_min = item_xp / item_time
+                    # best_xp_per_min = best_item_xp / best_time
+                    # item_xp_per_min ? best_xp_per_min ("?" is either > or <=)
+                    #
+                    # item_xp = best_item_xp * xp_diff
+                    # best_item_xp * xp_diff / item_time = best_item_xp / best_time
+                    #
+                    # find if xp_diff / item_time > 1 / best_time
+                    # xp_diff / item_time > 1 / best_time
+
+                    if xp_diff / item_time > 1 / best_time:
+                        best_item = item
+                        best_time = item_time
+
+                elif best_item.level == item.level:
+                    if item_time < best_time:
+                        best_item = item
+                        best_time = item_time
+
+                else:  # best_item.level > item.level
+                    # same as best_item.level < item.level
+                    xp_diff = (best_item.level - item.level) / 2.5
+                    if xp_diff / best_time < 1 / item_time:
+                        best_item = item
+                        best_time = item_time
 
         return best_item
 
@@ -628,3 +670,35 @@ class Character:
                     can_craft_children = can_craft_children and can_craft_child
 
             return can_craft_children
+
+    def calculate_time_to_craft(self, item: Item, attacker: 'Character', items: AllItems, monsters: AllMonsters, bank, quantity: int = 1):
+        # avg time to move
+        total_time = 30
+
+        if item.craft is None:
+            if item.subtype == "mob":
+                monster = monsters.get_drops(drop=item.code)
+                _, picked_items = self.find_optimal_build(
+                    monster=monster,
+                    items=items,
+                    bank=bank,
+                )
+                # avg time to farm
+                total_time += picked_items["rounds"] * 2 * monsters.get_drops_rate(drop=item.code)
+            else:
+                # time to mine
+                total_time += 20
+        else:
+            for child_item in item.craft.items:
+                sub_item = items.get_one(code=child_item.code)
+                total_time += self.calculate_time_to_craft(
+                    item=sub_item,
+                    attacker=attacker,
+                    items=items,
+                    monsters=monsters,
+                    bank=bank,
+                    quantity=child_item.quantity
+                )
+            # time to move between workshops
+            total_time += 35 * len(item.craft.items)
+        return total_time * quantity

@@ -97,6 +97,14 @@ class AllMonsters:
 
         return picked_monster
 
+    def get_drops_rate(self, drop: AnyStr = None) -> float:
+
+        monster = self.get_drops(drop=drop)
+
+        for item in monster.drops:
+            if item.code == drop:
+                return item.rate
+
     def get(self, code: AnyStr) -> Monster:
         for monster in self.monsters:
             if monster.code == code:

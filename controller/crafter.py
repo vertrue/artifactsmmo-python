@@ -65,9 +65,9 @@ class Crafter:
             try:
                 self.action()
             except Exception as e:
+                print(e)
                 sleep(60)
                 self.reset()
-                print(e)
 
     def pick_action(self):
         if self.wait_for_attacker:

@@ -80,9 +80,9 @@ class Attacker:
             try:
                 self.action()
             except Exception as e:
+                print(e)
                 sleep(60)
                 self.reset()
-                print(e)
 
     def pick_action(self):
         if self.iter % 30 == 0:
@@ -212,6 +212,8 @@ class Attacker:
         )
 
         for slot, item in picked_items.items():
+            if slot == "rounds":
+                continue
             character_item = self.character.character.get_slot_item(
                 slot=slot, items=self.items
             )
