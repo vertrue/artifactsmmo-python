@@ -194,7 +194,7 @@ class Crafter:
                         self.character.move(target=self.bank_map)
                         self.character.withdraw(code=tool.code)
                         self.character.equip(code=tool.code, slot=tool.type)
-                    elif current_item.get_effect_value(effect_name=item.subtype) < tool.get_effect_value(effect_name=item.subtype):
+                    elif current_item.get_effect_value(effect_name=item.subtype) > tool.get_effect_value(effect_name=item.subtype):
                         self.character.move(target=self.bank_map)
                         self.character.unequip(slot=tool.type)
                         self.character.withdraw(code=tool.code)
