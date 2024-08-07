@@ -5,7 +5,7 @@ from models.monster import AllMonsters, Monster
 from models.map import AllMaps
 from models.item import AllItems
 
-from typing import AnyStr
+from typing import AnyStr, List
 
 from time import sleep
 
@@ -97,8 +97,10 @@ class Attacker:
         elif not self.is_crafter:
             if self.can_complete_task and self.has_task:
                 return self.do_task
-            else:
+            elif self.character.character.level != 30:
                 return self.farm_xp
+            else:
+                return self.kill_all
         else:
             return self.farm_xp
 
@@ -174,6 +176,34 @@ class Attacker:
         self.character.fight()
 
         self.iter += 1
+
+    def kill_all(self):
+        filtered_monsters = self.monsters.filter()
+
+        targets: List[Monster] = []
+
+        for monster in filtered_monsters:
+            can_beat, _ = self.character.character.find_optimal_build(
+                monster=monster, items=self.items, bank=self.bank
+            )
+            if can_beat:
+                targets += [monster]
+
+        for monster in targets:
+            self.check_better_equipment(monster=monster)
+            for _ in range(20):
+                print(
+                    f"{self.character.character.name} is killing {monster.code}..."
+                )
+                closest_monster = self.maps.closest(
+                    character=self.character.character, content_code=monster.code
+                )
+
+                self.character.move(target=closest_monster)
+                self.character.fight()
+
+            self.character.move(target=self.bank_map)
+            self.character.deposit_all()
 
     def check_better_equipment(self, monster: Monster):
         print(f"{self.character.character.name} is checking for better equipment...")
