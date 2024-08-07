@@ -57,6 +57,8 @@ class BaseAPI:
                     url, headers=self.headers, data=json.dumps(body), verify=False
                 )
                 response_code = response.status_code
+                if response_code == 429:
+                    raise requests.exceptions.ConnectionError
                 response_data = json.loads(response.text)
                 break
             except (requests.exceptions.ConnectionError, json.JSONDecodeError):
@@ -74,6 +76,8 @@ class BaseAPI:
             try:
                 response = requests.get(url, headers=self.headers, params=params, verify=False)
                 response_code = response.status_code
+                if response_code == 429:
+                    raise requests.exceptions.ConnectionError
                 response_data = json.loads(response.text)
                 break
             except (requests.exceptions.ConnectionError, json.JSONDecodeError):
