@@ -77,6 +77,7 @@ class Crafter:
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
             items=self.items,
+            resources=self.resources,
             bank=self.bank,
             monsters=self.monsters,
         )
@@ -114,6 +115,7 @@ class Crafter:
             skill=self.craft_skill,
             attacker=self.attacker_mode.character.character,
             items=self.items,
+            resources=self.resources,
             monsters=self.monsters,
             bank=self.bank
         )
@@ -146,6 +148,7 @@ class Crafter:
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
             items=self.items,
+            resources=self.resources,
             bank=self.bank,
             monsters=self.monsters,
         )

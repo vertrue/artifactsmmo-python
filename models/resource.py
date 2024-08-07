@@ -70,8 +70,15 @@ class AllResources:
 
         filtered_drops = self.filter(drop=drop)
 
-        picked_resource = filtered_drops[0]
+        try:
+            picked_resource = filtered_drops[0]
+        except IndexError:
+            return None
+
         for resource in filtered_drops:
+            for drops in resource.drops:
+                if drops.code == drop and drops.rate > 1000:
+                    return None
             if resource.level < picked_resource.level:
                 picked_resource = resource
 

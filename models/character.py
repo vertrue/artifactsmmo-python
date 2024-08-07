@@ -3,6 +3,7 @@ from typing import List, Dict, Optional, AnyStr
 
 from models.monster import Monster, AllMonsters
 from models.item import Item, AllItems
+from models.resource import AllResources
 
 from copy import copy
 from math import floor, ceil
@@ -484,6 +485,7 @@ class Character:
         skill: AnyStr,
         attacker: "Character",
         items: AllItems,
+        resources: AllResources,
         bank,
         monsters: AllMonsters,
     ):
@@ -493,7 +495,7 @@ class Character:
             if bank.has_item(item=item):
                 continue
             if self.can_craft(
-                code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank
+                code=item.code, attacker=attacker, items=items, resources=resources, monsters=monsters, bank=bank
             ):
                 return item
 
@@ -524,11 +526,11 @@ class Character:
 
         return best_item
 
-    def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, bank) -> Item:
+    def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, resources: AllResources, bank) -> Item:
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
-            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank):
+            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
                 best_item = item
                 best_time = self.calculate_time_to_craft(
                     item=best_item,
@@ -540,7 +542,7 @@ class Character:
                 break
 
         for item in filtered_items:
-            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank):
+            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
                 item_time = self.calculate_time_to_craft(
                     item=item,
                     attacker=attacker,
@@ -587,13 +589,14 @@ class Character:
         attacker: "Character",
         items: AllItems,
         monsters: AllMonsters,
+        resources: AllResources,
         bank
     ):
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
             if self.can_craft(
-                code=item.code, attacker=attacker, items=items, monsters=monsters, bank=bank
+                code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank
             ):
                 if attacker.get_slot_item(slot=item.type, items=items) is None:
                     return item
@@ -609,6 +612,7 @@ class Character:
         attacker: "Character",
         items: AllItems,
         monsters: AllMonsters,
+        resources: AllResources,
         quantity=1,
         bank=None,
         root=True
@@ -623,6 +627,8 @@ class Character:
             if item.subtype == "mob":
                 return attacker.can_farm_resource(code=item.code, items=items, monsters=monsters, bank=bank)
             else:
+                if resources.get_drops(drop=item.code) is None:
+                    return False
                 return item.level <= self.get_skill_level(skill=item.subtype)
         else:
             if item.craft.level > self.get_skill_level(skill=item.craft.skill):
@@ -635,6 +641,7 @@ class Character:
                     attacker=attacker,
                     items=items,
                     monsters=monsters,
+                    resources=resources,
                     quantity=child_item.quantity,
                     bank=bank,
                     root=False
