@@ -56,15 +56,11 @@ class BaseAPI:
                 response = requests.post(
                     url, headers=self.headers, data=json.dumps(body), verify=False
                 )
+                response_code = response.status_code
+                response_data = json.loads(response.text)
                 break
-            except requests.exceptions.ConnectionError:
+            except (requests.exceptions.ConnectionError, json.JSONDecodeError):
                 sleep(1)
-
-        response_code = response.status_code
-        try:
-            response_data = json.loads(response.text)
-        except json.JSONDecodeError:
-            print(response)
 
         try:
             self.cooldown_expires = response_data["data"]["cooldown"]["expiration"]
@@ -77,14 +73,16 @@ class BaseAPI:
         while True:
             try:
                 response = requests.get(url, headers=self.headers, params=params, verify=False)
+                response_code = response.status_code
+                response_data = json.loads(response.text)
                 break
-            except requests.exceptions.ConnectionError:
+            except (requests.exceptions.ConnectionError, json.JSONDecodeError):
                 sleep(1)
 
-        response_code = response.status_code
-        response_body = json.loads(response.text)
-
-        return response_code, response_body
+        try:
+            self.cooldown_expires = response_data["data"]["cooldown"]["expiration"]
+        finally:
+            return response_code, response_data
 
     def get_all(self, method: AnyStr, params: Dict = {}):
         params = {"page": 1, "size": 100}
