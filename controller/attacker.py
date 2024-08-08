@@ -313,7 +313,7 @@ class Attacker:
             items=self.items,
             bank=self.bank
         )
-        monster = event.content.code
+        monster = self.monsters.get(code=event.content.code)
 
         self.check_better_equipment(monster=monster)
 
