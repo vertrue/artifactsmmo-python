@@ -5,6 +5,7 @@ from models.map import AllMaps
 from models.item import AllItems
 from models.character import Character
 from models.item import Item
+from models.grand_exchange import AllGreatExchange
 
 from typing import AnyStr, List
 
@@ -57,9 +58,21 @@ class BankAPI(BaseAPI):
 
         return max(response["data"][0]["quantity"] - total_reserve, 0)
 
+    def get_gold(self):
+        code, response = self.get(method="/my/bank/gold")
+        return response["data"]["quantity"]
+
     def get_ge_sell_price(self, item: Item):
         code, response = self.get(method=f"/ge/{item.code}")
         return response["data"]["sell_price"]
+
+    def get_ge_buy_price(self, item: Item):
+        code, response = self.get(method=f"/ge/{item.code}")
+        return response["data"]["buy_price"]
+
+    def get_ge_items(self):
+        all_data = self.get_all(method="/ge/")
+        return AllGreatExchange(items=all_data)
 
     @staticmethod
     def get_map(character: Character, maps: AllMaps):

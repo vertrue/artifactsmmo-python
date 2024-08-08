@@ -58,6 +58,9 @@ cooker = Cooker(
     items=items,
     resources=resources,
     craft_skill="cooking",
-    secondary_skill="woodcutting",
+    secondary_skills=[
+        "woodcutting",
+        "mining"
+    ],
     attacker=attacker,
 )
