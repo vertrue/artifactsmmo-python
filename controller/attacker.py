@@ -1,5 +1,6 @@
 from api.character import MyCharacterAPI
 from api.bank import BankAPI
+from api.map import MapAPI
 
 from models.monster import AllMonsters, Monster
 from models.map import AllMaps
@@ -60,6 +61,8 @@ class Attacker:
             character=self.character.character, maps=self.maps
         )
 
+        self.map = MapAPI()
+
         self.farm_queue: FarmResources = FarmResources(monsters=self.monsters)
 
         self.is_crafter = is_crafter
@@ -89,8 +92,19 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
 
+        if self.map.has_events:
+            event = self.character.character.find_best_event(
+                map=self.map,
+                monsters=self.monsters,
+                items=self.items,
+                bank=self.bank
+            )
+
+            if event:
+                return self.do_event
+
         if not self.has_task and not self.is_crafter:
-            self.accept_task()
+            return self.accept_task
 
         if self.has_farm_resources:
             return self.farm_resource
@@ -290,3 +304,20 @@ class Attacker:
         )
 
         return can_beat
+
+    def do_event(self):
+        print(f"{self.character.character.name} is fighting event...")
+        event = self.character.character.find_best_event(
+            map=self.map,
+            monsters=self.monsters,
+            items=self.items,
+            bank=self.bank
+        )
+        monster = self.monsters.get(code=event.content.code)
+
+        self.check_better_equipment(monster=monster)
+
+        self.character.move(target=event)
+        self.character.fight()
+
+        self.iter += 1

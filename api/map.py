@@ -1,6 +1,8 @@
 from api.base import BaseAPI
 
-from models.map import AllMaps
+from models.map import AllMaps, Map
+
+from typing import List
 
 
 class MapAPI(BaseAPI):
@@ -10,3 +12,16 @@ class MapAPI(BaseAPI):
     def get_all_maps(self) -> AllMaps:
         all_data = self.get_all(method="/maps")
         return AllMaps(maps=all_data)
+
+    def get_event_maps(self) -> AllMaps:
+        try:
+            all_data = self.get_all(method="/events")
+            event_maps = [event["map"] for event in all_data]
+            return AllMaps(maps=event_maps)
+        except KeyError:
+            return AllMaps(maps=[])
+
+    @property
+    def has_events(self) -> bool:
+        events = self.get_event_maps()
+        return len(events.maps) > 0
