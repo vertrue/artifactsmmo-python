@@ -721,3 +721,24 @@ class Character:
             # time to move between workshops
             total_time += 35 * len(item.craft.items)
         return total_time * quantity
+
+    def find_best_event(self, map, monsters: AllMonsters, items: AllItems, bank):
+        events = map.get_event_maps()
+        best_event = None
+        for event in events.maps:
+            monster = monsters.get(code=event.content.code)
+            can_beat, _ = self.find_optimal_build(
+                monster=monster,
+                items=items,
+                bank=bank
+            )
+            print(f"{self.name} can beat event {monster.name}: {can_beat}")
+            if can_beat:
+                if best_event is None:
+                    best_event = event
+                else:
+                    best_event_monster = monsters.get(code=best_event.content.code)
+                    if best_event_monster.level < monster.level:
+                        best_event = event
+
+        return best_event
