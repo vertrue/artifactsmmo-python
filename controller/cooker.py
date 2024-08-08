@@ -156,7 +156,9 @@ for {price * quantity} gold ({price} for 1)..."
                 return item
 
             if bank_item.quantity > 5:
-                if item.type not in ["resource", "currency", "tool"]:
+                if item.type not in ["resource", "currency", "tool", "ring", "artifact"]:
+                    return item
+                elif item.type == "ring" and bank_item.quantity > 10:
                     return item
 
         return None
