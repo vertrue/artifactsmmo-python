@@ -81,7 +81,7 @@ class Cooker:
                 bank=self.bank
             )
             for item in secondary_items:
-                self._craft(item=item, quantity=0)
+                self._craft(item=item, quantity=3)
                 self.character.move(target=self.bank_map)
                 self.character.deposit_all()
 
