@@ -527,6 +527,14 @@ class Character:
         return best_item
 
     def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, resources: AllResources, bank) -> Item:
+        try:
+            if self.best_xp_item_ch_level == self.get_skill_level(skill=skill):
+                can_craft = self.can_craft(code=self.best_xp_item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank)
+                if can_craft:
+                    return self.best_xp_item
+        except AttributeError:
+            pass
+
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
@@ -580,6 +588,10 @@ class Character:
                     if xp_diff / best_time < 1 / item_time:
                         best_item = item
                         best_time = item_time
+
+        self.best_xp_item = best_item
+        self.best_xp_item_ch_level = self.get_skill_level(skill=skill)
+        self.best_xp_item_time = best_time
 
         return best_item
 

@@ -142,4 +142,22 @@ class MyCharacterAPI(MapAPI):
         method = f"/characters/{self.character.name}"
         code, response = self.get(method=method)
 
+        best_xp_item = None
+        best_xp_item_ch_level = None
+        best_xp_item_time = None
+
+        try:
+            best_xp_item = self.character.best_xp_item
+            best_xp_item_ch_level = self.character.best_xp_item_ch_level
+            best_xp_item_time = self.character.best_xp_item_time
+        except AttributeError:
+            best_xp_item = None
+            best_xp_item_ch_level = None
+            best_xp_item_time = None
+
         self.character = Character.from_dict(response["data"])
+
+        if best_xp_item:
+            self.character.best_xp_item = best_xp_item
+            self.character.best_xp_item_ch_level = best_xp_item_ch_level
+            self.character.best_xp_item_time = best_xp_item_time
