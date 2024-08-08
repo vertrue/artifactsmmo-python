@@ -99,6 +99,15 @@ class MyCharacterAPI(MapAPI):
 
         self._update_character()
 
+    def withdraw_gold(self, quantity):
+        method = f"/my/{self.character.name}/action/bank/withdraw/gold"
+
+        response_code, response_data = self.post(
+            method=method, body={"quantity": quantity}
+        )
+
+        self._update_character()
+
     def accept_task(self):
         method = f"/my/{self.character.name}/action/task/new"
 
@@ -122,6 +131,15 @@ class MyCharacterAPI(MapAPI):
 
     def sell(self, code: AnyStr, quantity: int, price: int):
         method = f"/my/{self.character.name}/action/ge/sell"
+
+        response_code, response_data = self.post(
+            method=method, body={"quantity": quantity, "code": code, "price": price}
+        )
+
+        self._update_character()
+
+    def buy(self, code: AnyStr, quantity: int, price: int):
+        method = f"/my/{self.character.name}/action/ge/buy"
 
         response_code, response_data = self.post(
             method=method, body={"quantity": quantity, "code": code, "price": price}

@@ -5,10 +5,11 @@ from models.monster import AllMonsters
 from models.map import AllMaps
 from models.item import AllItems, Item
 from models.resource import AllResources
+from models.grand_exchange import GreatExchange
 
 from controller.attacker import Attacker
 
-from typing import AnyStr, Dict
+from typing import AnyStr, Dict, List
 
 from time import sleep
 
@@ -22,7 +23,7 @@ class Cooker:
         items: AllItems,
         resources: AllResources,
         craft_skill: AnyStr,
-        secondary_skill: AnyStr,
+        secondary_skills: List[AnyStr],
         attacker: Attacker,
     ) -> None:
         self.character = character
@@ -32,7 +33,7 @@ class Cooker:
         self.resources = resources
 
         self.craft_skill = craft_skill
-        self.secondary_skill = secondary_skill
+        self.secondary_skills = secondary_skills
 
         self.bank = BankAPI()
         self.bank_map = self.bank.get_map(
@@ -61,6 +62,9 @@ class Cooker:
                 self.reset()
 
     def pick_action(self):
+        item_to_buy = self.find_buy()
+        if item_to_buy:
+            return self.buy
         item_to_sell = self.find_sell()
         if item_to_sell:
             return self.sell
@@ -69,16 +73,17 @@ class Cooker:
 
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
-        print(f"{self.character.character.name} is chopping woods...")
-        secondary_items = self.character.character.find_all_crafts(
-            skill=self.secondary_skill,
-            items=self.items,
-            bank=self.bank
-        )
-        for item in secondary_items:
-            self._craft(item=item, quantity=3)
-            self.character.move(target=self.bank_map)
-            self.character.deposit_all()
+        for secondary_skill in self.secondary_skills:
+            print(f"{self.character.character.name} is doing {secondary_skill}...")
+            secondary_items = self.character.character.find_all_crafts(
+                skill=secondary_skill,
+                items=self.items,
+                bank=self.bank
+            )
+            for item in secondary_items:
+                self._craft(item=item, quantity=3)
+                self.character.move(target=self.bank_map)
+                self.character.deposit_all()
 
         item = self.character.character.find_best_craft(
             skill=self.craft_skill, items=self.items, bank=self.bank
@@ -123,6 +128,26 @@ for {price * quantity} gold ({price} for 1)..."
         self.character.move(target=ge_map)
         self.character.sell(code=item.code, quantity=quantity, price=price)
 
+    def buy(self):
+        item = self.find_buy()
+        if item is None:
+            return
+        price = self.bank.get_ge_buy_price(item=item)
+        print(f"{self.character.character.name} is buying {item.name} for {price}")
+
+        self.character.move(target=self.bank_map)
+        self.character.withdraw_gold(quantity=price)
+
+        ge_map = self.maps.closest(
+            character=self.character.character,
+            content_type="grand_exchange",
+        )
+        self.character.move(target=ge_map)
+        self.character.buy(code=item.code, quantity=1, price=price)
+
+        self.character.move(target=self.bank_map)
+        self.character.deposit_all()
+
     def exchange_task_coin(self):
         item = self.find_sell()
         print(f"{self.character.character.name} is exchanging {item.name}")
@@ -156,7 +181,42 @@ for {price * quantity} gold ({price} for 1)..."
                 return item
 
             if bank_item.quantity > 5:
-                if item.type not in ["resource", "currency", "tool"]:
+                if item.type not in ["resource", "currency", "tool", "ring", "artifact"]:
+                    return item
+                elif item.type == "ring" and bank_item.quantity > 10:
+                    return item
+
+        return None
+
+    def find_buy(self) -> Item | None:
+        types = [
+            "weapon",
+            "shield",
+            "helmet",
+            "body_armor",
+            "leg_armor",
+            "boots",
+            "ring",
+            "amulet",
+            "artifact",
+        ]
+
+        ge_items = self.bank.get_ge_items()
+        bank_gold = self.bank.get_gold()
+
+        def key(el: GreatExchange):
+            item = self.items.get_one(code=el.code)
+            return item.level
+
+        ge_items.items.sort(key=key, reverse=True)
+
+        for ge_item in ge_items.items:
+            if ge_item.stock > 0 and ge_item.buy_price <= bank_gold:
+                item = self.items.get_one(code=ge_item.code)
+                if item.type not in types:
+                    continue
+                has_item = self.bank.has_item(item=item)
+                if not has_item:
                     return item
 
         return None
