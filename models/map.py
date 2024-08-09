@@ -85,4 +85,4 @@ class AllMaps:
             if self.dist(map, character) < self.dist(closest, character):
                 closest = map
 
-        return map
+        return closest
