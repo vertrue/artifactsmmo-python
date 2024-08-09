@@ -103,7 +103,7 @@ class Cooker:
             self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
             )
-            - 2
+            - 5
         )
         quantity = min(50, quantity, self.character.character.inventory_max_items)
 
