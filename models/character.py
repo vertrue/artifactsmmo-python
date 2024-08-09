@@ -4,6 +4,7 @@ from typing import List, Dict, Optional, AnyStr
 from models.monster import Monster, AllMonsters
 from models.item import Item, AllItems
 from models.resource import AllResources
+from models.bank import AllBankItems
 
 from copy import copy
 from math import floor, ceil
@@ -528,12 +529,13 @@ class Character:
 
     def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, resources: AllResources, bank) -> Item:
         filtered_items = items.filter(craft_skill=skill)
+        bank_items: AllBankItems = bank.get_all_items()
 
         def key(el: Item):
             return el.level
 
         for item in sorted(filtered_items, key=key, reverse=True):
-            if self.can_craft_bank_only(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
+            if self.can_craft_bank_only(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank_items):
                 return item
 
         try:
@@ -676,18 +678,18 @@ class Character:
         items: AllItems,
         monsters: AllMonsters,
         resources: AllResources,
+        bank: AllBankItems,
         quantity=1,
-        bank=None,
         root=True
     ) -> bool:
         item = items.get_one(code=code)
 
-        if bank and not root:
-            if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
+        if not root:
+            if bank.get_quantity(item_code=item.code) >= quantity:
                 return True
 
         if item.craft is None:
-            if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
+            if bank.get_quantity(item_code=item.code) >= quantity:
                 return True
             else:
                 return False
