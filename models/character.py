@@ -527,6 +527,12 @@ class Character:
         return best_item
 
     def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, resources: AllResources, bank) -> Item:
+        filtered_items = items.filter(craft_skill=skill)
+
+        for item in filtered_items:
+            if self.can_craft_bank_only(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
+                return item
+
         try:
             if self.best_xp_item_ch_level == self.get_skill_level(skill=skill):
                 can_craft = self.can_craft(code=self.best_xp_item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank)
@@ -534,8 +540,6 @@ class Character:
                     return self.best_xp_item
         except AttributeError:
             pass
-
-        filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
             if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
@@ -649,6 +653,49 @@ class Character:
             can_craft_children = True
             for child_item in item.craft.items:
                 can_craft_child = self.can_craft(
+                    code=child_item.code,
+                    attacker=attacker,
+                    items=items,
+                    monsters=monsters,
+                    resources=resources,
+                    quantity=child_item.quantity,
+                    bank=bank,
+                    root=False
+                )
+                can_craft_children = can_craft_children and can_craft_child
+
+            return can_craft_children
+
+    def can_craft_bank_only(
+        self,
+        code: AnyStr,
+        attacker: "Character",
+        items: AllItems,
+        monsters: AllMonsters,
+        resources: AllResources,
+        quantity=1,
+        bank=None,
+        root=True
+    ) -> bool:
+        item = items.get_one(code=code)
+
+        if bank and not root:
+            if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
+                return True
+
+        if item.craft is None:
+            if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
+                return True
+            else:
+                return False
+
+        else:
+            if item.craft.level > self.get_skill_level(skill=item.craft.skill):
+                return False
+
+            can_craft_children = True
+            for child_item in item.craft.items:
+                can_craft_child = self.can_craft_bank_only(
                     code=child_item.code,
                     attacker=attacker,
                     items=items,
