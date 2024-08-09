@@ -529,7 +529,10 @@ class Character:
     def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, resources: AllResources, bank) -> Item:
         filtered_items = items.filter(craft_skill=skill)
 
-        for item in filtered_items:
+        def key(el: Item):
+            return el.level
+
+        for item in sorted(filtered_items, key=key, reverse=True):
             if self.can_craft_bank_only(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
                 return item
 
