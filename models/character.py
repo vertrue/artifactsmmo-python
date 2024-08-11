@@ -568,35 +568,14 @@ class Character:
                     bank=bank
                 )
 
-                if best_item.level < item.level:
-                    xp_diff = (item.level - best_item.level) / 2.5
+                skill_level = getattr(self, f"{item.craft.skill}_level")
+                # just theory, but close to true
+                best_item_xp = 50 + 50 * (best_item.level / 5) - (skill_level - item.level) / 2
+                item_xp = 50 + 50 * (item.level / 5) - (skill_level - item.level) / 2
 
-                    # calculation!!
-                    # item_xp_per_min = item_xp / item_time
-                    # best_xp_per_min = best_item_xp / best_time
-                    # item_xp_per_min ? best_xp_per_min ("?" is either > or <=)
-                    #
-                    # item_xp = best_item_xp * xp_diff
-                    # best_item_xp * xp_diff / item_time = best_item_xp / best_time
-                    #
-                    # find if xp_diff / item_time > 1 / best_time
-                    # xp_diff / item_time > 1 / best_time
-
-                    if xp_diff / item_time > 1 / best_time:
-                        best_item = item
-                        best_time = item_time
-
-                elif best_item.level == item.level:
-                    if item_time < best_time:
-                        best_item = item
-                        best_time = item_time
-
-                else:  # best_item.level > item.level
-                    # same as best_item.level < item.level
-                    xp_diff = (best_item.level - item.level) / 2.5
-                    if xp_diff / best_time < 1 / item_time:
-                        best_item = item
-                        best_time = item_time
+                if item_xp / item_time > best_item_xp / best_time:
+                    best_item = item
+                    best_time = item_time
 
         self.best_xp_item = best_item
         self.best_xp_item_ch_level = self.get_skill_level(skill=skill)
