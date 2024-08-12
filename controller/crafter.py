@@ -11,6 +11,7 @@ from controller.attacker import Attacker
 from typing import AnyStr, Dict
 
 from time import sleep
+import traceback
 
 
 class Crafter:
@@ -66,6 +67,7 @@ class Crafter:
                 self.action()
             except Exception as e:
                 print(e)
+                print(traceback.format_exc())
                 sleep(60)
                 self.reset()
 

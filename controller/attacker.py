@@ -9,6 +9,7 @@ from models.item import AllItems
 from typing import AnyStr, List
 
 from time import sleep
+import traceback
 
 
 class MonsterResource:
@@ -84,10 +85,11 @@ class Attacker:
                 self.action()
             except Exception as e:
                 print(e)
+                print(traceback.format_exc())
                 sleep(60)
                 self.reset()
 
-    def pick_action(self, crafter_max_level = False):
+    def pick_action(self, crafter_max_level=False):
         if self.iter % 30 == 0:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
