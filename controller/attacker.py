@@ -181,7 +181,7 @@ class Attacker:
             f"{self.character.character.name} is farming xp {self.iter} times..."
         )
         best_monster = self.character.character.find_best_monster(
-            monsters=self.monsters, items=self.items, bank=self.bank
+            monsters=self.monsters, items=self.items, maps=self.maps, bank=self.bank
         )
         self.check_better_equipment(monster=best_monster)
         closest_monster = self.maps.closest(

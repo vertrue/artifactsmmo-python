@@ -158,7 +158,7 @@ class Character:
         except AttributeError:
             return 0
 
-    def find_best_monster(self, monsters: AllMonsters, items: AllItems, bank):
+    def find_best_monster(self, monsters: AllMonsters, items: AllItems, maps, bank):
         filtered_monsters = monsters.filter()
 
         for monster in filtered_monsters:
@@ -166,15 +166,29 @@ class Character:
                 monster=monster, items=items, bank=bank
             )
             if can_beat:
-                target_monster = monster
-                break
+                try:
+                    _ = maps.closest(
+                        character=self,
+                        content_code=monster.code
+                    )
+                    target_monster = monster
+                    break
+                except IndexError:
+                    continue
 
         for monster in filtered_monsters:
             can_beat, _ = self.find_optimal_build(
                 monster=monster, items=items, bank=bank
             )
             if can_beat and monster.level > target_monster.level:
-                target_monster = monster
+                try:
+                    _ = maps.closest(
+                        character=self,
+                        content_code=monster.code
+                    )
+                    target_monster = monster
+                except IndexError:
+                    continue
 
         return target_monster
 
