@@ -107,7 +107,10 @@ class Crafter:
                 self.wait_for_attacker = False
                 return self.craft_for_attacker
         else:
-            return self.farm_xp
+            if getattr(self.character.character, f"{self.craft_skill}_level") == 30:
+                return self.attacker_mode.pick_action(crafter_max_level=True)
+            else:
+                return self.farm_xp
 
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")

@@ -87,7 +87,7 @@ class Attacker:
                 sleep(60)
                 self.reset()
 
-    def pick_action(self):
+    def pick_action(self, crafter_max_level = False):
         if self.iter % 30 == 0:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
@@ -103,12 +103,12 @@ class Attacker:
             if event:
                 return self.do_event
 
-        if not self.has_task and not self.is_crafter:
+        if not self.has_task and (not self.is_crafter or crafter_max_level):
             return self.accept_task
 
         if self.has_farm_resources:
             return self.farm_resource
-        elif not self.is_crafter:
+        elif not self.is_crafter or crafter_max_level:
             if self.can_complete_task and self.has_task:
                 return self.do_task
             elif self.character.character.level != 30:
