@@ -74,7 +74,9 @@ class BaseAPI:
         url = self.host + method
         while True:
             try:
-                response = requests.get(url, headers=self.headers, params=params, verify=False)
+                response = requests.get(
+                    url, headers=self.headers, params=params, verify=False
+                )
                 response_code = response.status_code
                 if response_code == 429:
                     raise requests.exceptions.ConnectionError

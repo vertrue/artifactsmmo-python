@@ -78,9 +78,7 @@ class Cooker:
         for secondary_skill in self.secondary_skills:
             print(f"{self.character.character.name} is doing {secondary_skill}...")
             secondary_items = self.character.character.find_all_crafts(
-                skill=secondary_skill,
-                items=self.items,
-                bank=self.bank
+                skill=secondary_skill, items=self.items, bank=self.bank
             )
             for item in secondary_items:
                 self._craft(item=item, quantity=3)
@@ -156,7 +154,9 @@ for {price * quantity} gold ({price} for 1)..."
         quantity = (
             self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
-            ) // 3 * 3
+            )
+            // 3
+            * 3
         )
         quantity = min(50, quantity, self.character.character.inventory_max_items)
         self.character.move(target=self.bank_map)
@@ -185,7 +185,13 @@ for {price * quantity} gold ({price} for 1)..."
             if bank_item.quantity > 5:
                 if item.type == "resource" and item.subtype == "food":
                     return item
-                if item.type not in ["resource", "currency", "tool", "ring", "artifact"]:
+                if item.type not in [
+                    "resource",
+                    "currency",
+                    "tool",
+                    "ring",
+                    "artifact",
+                ]:
                     return item
                 elif item.type == "ring" and bank_item.quantity > 10:
                     return item

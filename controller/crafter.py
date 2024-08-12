@@ -49,7 +49,7 @@ class Crafter:
             monsters=self.monsters,
             maps=self.maps,
             items=self.items,
-            is_crafter=True
+            is_crafter=True,
         )
 
     def pre_run(self):
@@ -103,7 +103,9 @@ class Crafter:
                         )
                         self.wait_for_attacker = True
                         return self.attacker_mode.pick_action()
-                print(f"{self.character.character.name} does not have level for collecting {item_code} for {item_for_attacker.name}...")
+                print(
+                    f"{self.character.character.name} does not have level for collecting {item_code} for {item_for_attacker.name}..."
+                )
                 return self.attacker_mode.pick_action()
             else:
                 self.wait_for_attacker = False
@@ -122,7 +124,7 @@ class Crafter:
             items=self.items,
             resources=self.resources,
             monsters=self.monsters,
-            bank=self.bank
+            bank=self.bank,
         )
         if (
             self.bank.get_quantity(
@@ -146,9 +148,7 @@ class Crafter:
         self.character.deposit_all()
 
     def craft_for_attacker(self):
-        print(
-            f"{self.character.character.name} is crafting for attackers..."
-        )
+        print(f"{self.character.character.name} is crafting for attackers...")
         item_for_attacker = self.character.character.find_unique_craft(
             skill=self.craft_skill,
             attacker=self.attacker.character.character,
@@ -197,12 +197,16 @@ class Crafter:
             tool = self.bank.get_tool(skill=item.subtype, items=self.items)
             if tool:
                 if self.character.character.level >= tool.level:
-                    current_item = self.character.character.get_slot_item(slot=tool.type, items=self.items)
+                    current_item = self.character.character.get_slot_item(
+                        slot=tool.type, items=self.items
+                    )
                     if current_item is None:
                         self.character.move(target=self.bank_map)
                         self.character.withdraw(code=tool.code)
                         self.character.equip(code=tool.code, slot=tool.type)
-                    elif current_item.get_effect_value(effect_name=item.subtype) > tool.get_effect_value(effect_name=item.subtype):
+                    elif current_item.get_effect_value(
+                        effect_name=item.subtype
+                    ) > tool.get_effect_value(effect_name=item.subtype):
                         self.character.move(target=self.bank_map)
                         self.character.unequip(slot=tool.type)
                         self.character.withdraw(code=tool.code)
@@ -215,15 +219,20 @@ class Crafter:
                 character=self.character.character,
                 content_code=resource.code,
             )
-            while self.character.character.get_resource_quantity(code=item.code) < quantity:
+            while (
+                self.character.character.get_resource_quantity(code=item.code)
+                < quantity
+            ):
                 self.character.move(target=map)
                 self.character.gather()
         else:
-            while self.character.character.get_resource_quantity(code=item.code) < quantity:
+            while (
+                self.character.character.get_resource_quantity(code=item.code)
+                < quantity
+            ):
                 monster = self.monsters.get_drops(drop=item.code)
                 monster_map = self.maps.closest(
-                    character=self.character.character,
-                    content_code=monster.code
+                    character=self.character.character, content_code=monster.code
                 )
 
                 self.attacker_mode.check_better_equipment(monster=monster)

@@ -9,6 +9,7 @@ from models.bank import AllBankItems
 from copy import copy
 from math import floor, ceil
 
+
 @dataclass
 class InventoryItem:
     slot: int
@@ -167,10 +168,7 @@ class Character:
             )
             if can_beat:
                 try:
-                    _ = maps.closest(
-                        character=self,
-                        content_code=monster.code
-                    )
+                    _ = maps.closest(character=self, content_code=monster.code)
                     target_monster = monster
                     break
                 except IndexError:
@@ -182,10 +180,7 @@ class Character:
             )
             if can_beat and monster.level > target_monster.level:
                 try:
-                    _ = maps.closest(
-                        character=self,
-                        content_code=monster.code
-                    )
+                    _ = maps.closest(character=self, content_code=monster.code)
                     target_monster = monster
                 except IndexError:
                     continue
@@ -293,12 +288,16 @@ class Character:
             if slot != "can_beat" and slot != "rounds" and picked_item is not None:
                 equiped_item = character.get_slot_item(slot=slot, items=items)
                 if equiped_item is None:
-                    equiped = character.equiped_stats(character=character, item=picked_item)
+                    equiped = character.equiped_stats(
+                        character=character, item=picked_item
+                    )
                 else:
                     unequiped = character.unequiped_stats(
                         character=character, item=equiped_item
                     )
-                    equiped = character.equiped_stats(character=unequiped, item=picked_item)
+                    equiped = character.equiped_stats(
+                        character=unequiped, item=picked_item
+                    )
                 character = equiped
 
         players_hp = character.hp
@@ -349,7 +348,9 @@ class Character:
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
 
-                mob_attack = ceil(monster.attack_earth * (1 - character.res_earth / 100))
+                mob_attack = ceil(
+                    monster.attack_earth * (1 - character.res_earth / 100)
+                )
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
@@ -359,7 +360,9 @@ class Character:
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
 
-                mob_attack = ceil(monster.attack_water * (1 - character.res_water / 100))
+                mob_attack = ceil(
+                    monster.attack_water * (1 - character.res_water / 100)
+                )
                 players_hp -= mob_attack
                 if players_hp <= 0:
                     return False, i, players_hp, mobs_hp
@@ -418,7 +421,10 @@ class Character:
                     if item.level > self.level:
                         continue
                     if item.type == slot or item.type == slot[: len(slot) - 1]:
-                        if picked_items_amount[item.code] < bank_items_amount[item.code]:
+                        if (
+                            picked_items_amount[item.code]
+                            < bank_items_amount[item.code]
+                        ):
                             possible_items += [item]
 
                 if possible_items == [None]:
@@ -430,9 +436,7 @@ class Character:
                 for item in possible_items:
                     if item is not None:
                         item_score = self.item_score(
-                            monster=monster,
-                            item=item,
-                            weapon=weapon
+                            monster=monster, item=item, weapon=weapon
                         )
                         if item_score > best_item_score:
                             best_item = item
@@ -446,16 +450,17 @@ class Character:
                     except KeyError:
                         picked_items_amount[best_item.code] = 1
 
-            picked_items["can_beat"], rounds, _, _ = (
-                self.can_beat_check(
-                    monster=monster,
-                    items=items,
-                    picked_items=picked_items,
-                )
+            picked_items["can_beat"], rounds, _, _ = self.can_beat_check(
+                monster=monster,
+                items=items,
+                picked_items=picked_items,
             )
             picked_items["rounds"] = rounds
 
-            if picked_items["can_beat"] and picked_items["rounds"] < best_build["rounds"]:
+            if (
+                picked_items["can_beat"]
+                and picked_items["rounds"] < best_build["rounds"]
+            ):
                 best_build = picked_items
 
         can_beat = best_build["can_beat"]
@@ -486,7 +491,9 @@ class Character:
 
         return score
 
-    def can_farm_resource(self, code: AnyStr, items: AllItems, monsters: AllMonsters, bank) -> bool:
+    def can_farm_resource(
+        self, code: AnyStr, items: AllItems, monsters: AllMonsters, bank
+    ) -> bool:
         monster = monsters.get_drops(drop=code)
         can_beat, _ = self.find_optimal_build(
             monster=monster,
@@ -510,7 +517,12 @@ class Character:
             if bank.has_item(item=item):
                 continue
             if self.can_craft(
-                code=item.code, attacker=attacker, items=items, resources=resources, monsters=monsters, bank=bank
+                code=item.code,
+                attacker=attacker,
+                items=items,
+                resources=resources,
+                monsters=monsters,
+                bank=bank,
             ):
                 return item
 
@@ -541,7 +553,15 @@ class Character:
 
         return best_item
 
-    def find_best_craft_with_attacker(self, skill: AnyStr, attacker: 'Character', items: AllItems, monsters: AllMonsters, resources: AllResources, bank) -> Item:
+    def find_best_craft_with_attacker(
+        self,
+        skill: AnyStr,
+        attacker: "Character",
+        items: AllItems,
+        monsters: AllMonsters,
+        resources: AllResources,
+        bank,
+    ) -> Item:
         filtered_items = items.filter(craft_skill=skill)
         bank_items: AllBankItems = bank.get_all_items()
 
@@ -549,42 +569,72 @@ class Character:
             return el.level
 
         for item in sorted(filtered_items, key=key, reverse=True):
-            if self.can_craft_bank_only(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank_items):
+            if self.can_craft_bank_only(
+                code=item.code,
+                attacker=attacker,
+                items=items,
+                monsters=monsters,
+                resources=resources,
+                bank=bank_items,
+            ):
                 return item
 
         try:
             if self.best_xp_item_ch_level == self.get_skill_level(skill=skill):
-                can_craft = self.can_craft(code=self.best_xp_item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank)
+                can_craft = self.can_craft(
+                    code=self.best_xp_item.code,
+                    attacker=attacker,
+                    items=items,
+                    monsters=monsters,
+                    resources=resources,
+                    bank=bank,
+                )
                 if can_craft:
                     return self.best_xp_item
         except AttributeError:
             pass
 
         for item in filtered_items:
-            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
+            if self.can_craft(
+                code=item.code,
+                attacker=attacker,
+                items=items,
+                monsters=monsters,
+                resources=resources,
+                bank=bank,
+            ):
                 best_item = item
                 best_time = self.calculate_time_to_craft(
                     item=best_item,
                     attacker=attacker,
                     items=items,
                     monsters=monsters,
-                    bank=bank
+                    bank=bank,
                 )
                 break
 
         for item in filtered_items:
-            if self.can_craft(code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank):
+            if self.can_craft(
+                code=item.code,
+                attacker=attacker,
+                items=items,
+                monsters=monsters,
+                resources=resources,
+                bank=bank,
+            ):
                 item_time = self.calculate_time_to_craft(
                     item=item,
                     attacker=attacker,
                     items=items,
                     monsters=monsters,
-                    bank=bank
+                    bank=bank,
                 )
 
                 skill_level = getattr(self, f"{item.craft.skill}_level")
                 # just theory, but close to true
-                best_item_xp = 50 + 50 * (best_item.level / 5) - (skill_level - item.level) / 2
+                best_item_xp = (
+                    50 + 50 * (best_item.level / 5) - (skill_level - item.level) / 2
+                )
                 item_xp = 50 + 50 * (item.level / 5) - (skill_level - item.level) / 2
 
                 if item_xp / item_time > best_item_xp / best_time:
@@ -604,13 +654,18 @@ class Character:
         items: AllItems,
         monsters: AllMonsters,
         resources: AllResources,
-        bank
+        bank,
     ):
         filtered_items = items.filter(craft_skill=skill)
 
         for item in filtered_items:
             if self.can_craft(
-                code=item.code, attacker=attacker, items=items, monsters=monsters, resources=resources, bank=bank
+                code=item.code,
+                attacker=attacker,
+                items=items,
+                monsters=monsters,
+                resources=resources,
+                bank=bank,
             ):
                 if attacker.get_slot_item(slot=item.type, items=items) is None:
                     return item
@@ -629,17 +684,22 @@ class Character:
         resources: AllResources,
         quantity=1,
         bank=None,
-        root=True
+        root=True,
     ) -> bool:
         item = items.get_one(code=code)
 
         if bank and not root:
-            if bank.get_quantity(item_code=item.code, character_name=self.name) >= quantity:
+            if (
+                bank.get_quantity(item_code=item.code, character_name=self.name)
+                >= quantity
+            ):
                 return True
 
         if item.craft is None:
             if item.subtype == "mob":
-                return attacker.can_farm_resource(code=item.code, items=items, monsters=monsters, bank=bank)
+                return attacker.can_farm_resource(
+                    code=item.code, items=items, monsters=monsters, bank=bank
+                )
             else:
                 if resources.get_drops(drop=item.code) is None:
                     return False
@@ -658,7 +718,7 @@ class Character:
                     resources=resources,
                     quantity=child_item.quantity,
                     bank=bank,
-                    root=False
+                    root=False,
                 )
                 can_craft_children = can_craft_children and can_craft_child
 
@@ -673,7 +733,7 @@ class Character:
         resources: AllResources,
         bank: AllBankItems,
         quantity=1,
-        root=True
+        root=True,
     ) -> bool:
         item = items.get_one(code=code)
 
@@ -701,7 +761,7 @@ class Character:
                     resources=resources,
                     quantity=child_item.quantity,
                     bank=bank,
-                    root=False
+                    root=False,
                 )
                 can_craft_children = can_craft_children and can_craft_child
 
@@ -735,7 +795,15 @@ class Character:
 
             return can_craft_children
 
-    def calculate_time_to_craft(self, item: Item, attacker: 'Character', items: AllItems, monsters: AllMonsters, bank, quantity: int = 1):
+    def calculate_time_to_craft(
+        self,
+        item: Item,
+        attacker: "Character",
+        items: AllItems,
+        monsters: AllMonsters,
+        bank,
+        quantity: int = 1,
+    ):
         # avg time to move
         total_time = 30
 
@@ -748,7 +816,9 @@ class Character:
                     bank=bank,
                 )
                 # avg time to farm
-                total_time += picked_items["rounds"] * 2 * monsters.get_drops_rate(drop=item.code)
+                total_time += (
+                    picked_items["rounds"] * 2 * monsters.get_drops_rate(drop=item.code)
+                )
             else:
                 # time to mine
                 total_time += 20
@@ -761,7 +831,7 @@ class Character:
                     items=items,
                     monsters=monsters,
                     bank=bank,
-                    quantity=child_item.quantity
+                    quantity=child_item.quantity,
                 )
             # time to move between workshops
             total_time += 35 * len(item.craft.items)
@@ -773,9 +843,7 @@ class Character:
         for event in events.maps:
             monster = monsters.get(code=event.content.code)
             can_beat, _ = self.find_optimal_build(
-                monster=monster,
-                items=items,
-                bank=bank
+                monster=monster, items=items, bank=bank
             )
             print(f"{self.name} can beat event {monster.name}: {can_beat}")
             if can_beat:

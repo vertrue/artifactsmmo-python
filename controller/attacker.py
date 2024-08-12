@@ -50,7 +50,7 @@ class Attacker:
         monsters: AllMonsters,
         maps: AllMaps,
         items: AllItems,
-        is_crafter: bool = False
+        is_crafter: bool = False,
     ) -> None:
         self.character = character
         self.monsters = monsters
@@ -96,10 +96,7 @@ class Attacker:
 
         if self.map.has_events:
             event = self.character.character.find_best_event(
-                map=self.map,
-                monsters=self.monsters,
-                items=self.items,
-                bank=self.bank
+                map=self.map, monsters=self.monsters, items=self.items, bank=self.bank
             )
 
             if event:
@@ -134,9 +131,7 @@ class Attacker:
             return False
 
         can_beat, _ = self.character.character.find_optimal_build(
-            monster=monster,
-            items=self.items,
-            bank=self.bank
+            monster=monster, items=self.items, bank=self.bank
         )
         if not can_beat:
             return False
@@ -177,9 +172,7 @@ class Attacker:
         self.iter += 1
 
     def farm_xp(self):
-        print(
-            f"{self.character.character.name} is farming xp {self.iter} times..."
-        )
+        print(f"{self.character.character.name} is farming xp {self.iter} times...")
         best_monster = self.character.character.find_best_monster(
             monsters=self.monsters, items=self.items, maps=self.maps, bank=self.bank
         )
@@ -208,9 +201,7 @@ class Attacker:
         for monster in targets:
             self.check_better_equipment(monster=monster)
             for _ in range(20):
-                print(
-                    f"{self.character.character.name} is killing {monster.code}..."
-                )
+                print(f"{self.character.character.name} is killing {monster.code}...")
                 closest_monster = self.maps.closest(
                     character=self.character.character, content_code=monster.code
                 )
@@ -310,10 +301,7 @@ class Attacker:
     def do_event(self):
         print(f"{self.character.character.name} is fighting event...")
         event = self.character.character.find_best_event(
-            map=self.map,
-            monsters=self.monsters,
-            items=self.items,
-            bank=self.bank
+            map=self.map, monsters=self.monsters, items=self.items, bank=self.bank
         )
         monster = self.monsters.get(code=event.content.code)
 
