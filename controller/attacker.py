@@ -257,7 +257,7 @@ class Attacker:
                 self.character.equip(code=item.code, slot=slot)
 
             if character_item is not None and item is not None:
-                if character_item == item:
+                if character_item == item and item.type != "consumable":
                     continue
                 print(f"{self.character.character.name} is equiping {item.code}...")
                 self.character.move(target=self.bank_map)
