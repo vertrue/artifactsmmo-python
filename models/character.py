@@ -474,10 +474,17 @@ class Character:
                     try:
                         if best_item.type == "consumable":
                             picked_items_amount[best_item.code] = bank_items_amount[best_item.code]
+                            if self.consumable1_slot == best_item.code:
+                                picked_items_amount[best_item.code] += self.consumable1_slot_quantity
                         else:
                             picked_items_amount[best_item.code] += 1
                     except KeyError:
-                        picked_items_amount[best_item.code] = 1
+                        if best_item.type == "consumable":
+                            picked_items_amount[best_item.code] = self.consumable1_slot_quantity
+                        else:
+                            picked_items_amount[best_item.code] = 1
+
+                # print(slot, best_item.code, picked_items_amount[best_item.code])
 
             picked_items["can_beat"], rounds, _, _ = self.can_beat_check(
                 monster=monster,
