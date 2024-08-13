@@ -73,6 +73,8 @@ class Attacker:
 
         self.final_boss = self.monsters.get(code="lich")
 
+        self.cooker = None
+
     def _set_cooker(self, cooker):
         self.cooker = cooker
 
@@ -99,9 +101,10 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
 
-        if not self.cooker.cooking:
-            if self.character.character.level == 30 and not self.is_crafter and self.can_beat_final_boss:
-                self.kill(monster=self.final_boss)
+        if self.cooker:
+            if not self.cooker.cooking:
+                if self.character.character.level == 30 and not self.is_crafter and self.can_beat_final_boss:
+                    self.kill(monster=self.final_boss)
 
         if self.map.has_events:
             event = self.character.character.find_best_event(
