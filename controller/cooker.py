@@ -45,6 +45,9 @@ class Cooker:
 
         self.action = None
 
+        self.cooking = False
+        self.cooking_quantity = 1
+
     def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
@@ -64,6 +67,8 @@ class Cooker:
                 self.reset()
 
     def pick_action(self):
+        if self.cooking:
+            return self.cook
         item_to_buy = self.find_buy()
         if item_to_buy:
             return self.buy
@@ -76,15 +81,21 @@ class Cooker:
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
         for secondary_skill in self.secondary_skills:
+            if self.cooking:
+                return
             print(f"{self.character.character.name} is doing {secondary_skill}...")
             secondary_items = self.character.character.find_all_crafts(
                 skill=secondary_skill, items=self.items, bank=self.bank
             )
             for item in secondary_items:
+                if self.cooking:
+                    return
                 self._craft(item=item, quantity=3)
                 self.character.move(target=self.bank_map)
                 self.character.deposit_all()
 
+        if self.cooking:
+            return
         item = self.character.character.find_best_craft(
             skill=self.craft_skill, items=self.items, bank=self.bank
         )
@@ -92,6 +103,18 @@ class Cooker:
 
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
+
+    def cook(self):
+        print(f"{self.character.character.name} is cooking for attacker...")
+        item = self.character.character.find_best_craft(
+            skill=self.craft_skill, items=self.items, bank=self.bank
+        )
+        self._craft(item=item, quantity=self.cooking_quantity, cooking_for_attacker=True)
+
+        self.character.move(target=self.bank_map)
+        self.character.deposit_all()
+
+        self.cooking = False
 
     def sell(self):
         item = self.find_sell()
@@ -183,14 +206,13 @@ for {price * quantity} gold ({price} for 1)..."
                 return item
 
             if bank_item.quantity > 5:
-                if item.type == "resource" and item.subtype == "food":
-                    return item
                 if item.type not in [
                     "resource",
                     "currency",
                     "tool",
                     "ring",
                     "artifact",
+                    "consumable",
                 ]:
                     return item
                 elif item.type == "ring" and bank_item.quantity > 10:
@@ -231,7 +253,10 @@ for {price * quantity} gold ({price} for 1)..."
 
         return None
 
-    def _collect(self, item: Item, quantity: int):
+    def _collect(self, item: Item, quantity: int, cooking_for_attacker: bool = False):
+        if self.cooking and not cooking_for_attacker:
+            return
+
         character_quantity = self.character.character.get_resource_quantity(
             code=item.code
         )
@@ -267,10 +292,15 @@ for {price * quantity} gold ({price} for 1)..."
             content_code=resource.code,
         )
         while self.character.character.get_resource_quantity(code=item.code) < quantity:
+            if self.cooking and not cooking_for_attacker:
+                return
             self.character.move(target=map)
             self.character.gather()
 
-    def _craft(self, item: Item, quantity: int = 1, root: bool = True):
+    def _craft(self, item: Item, quantity: int = 1, root: bool = True, cooking_for_attacker: bool = False):
+        print(f"{self.character.character.name} is crafting {quantity} {item.code}...")
+        if self.cooking and not cooking_for_attacker:
+            return
         original_quantity = quantity
         if not root:
             character_quantity = self.character.character.get_resource_quantity(
@@ -290,15 +320,17 @@ for {price * quantity} gold ({price} for 1)..."
 
         print(f"{self.character.character.name} is crafting {item.code}...")
         for part in item.craft.items:
+            if self.cooking and not cooking_for_attacker:
+                return
             item_quantity = part.quantity
             item_code = part.code
 
             craft_item = self.items.get_one(code=item_code)
 
             if craft_item.craft is None:
-                self._collect(craft_item, item_quantity * quantity)
+                self._collect(craft_item, item_quantity * quantity, cooking_for_attacker)
             else:
-                self._craft(item=craft_item, quantity=item_quantity, root=False)
+                self._craft(item=craft_item, quantity=item_quantity, root=False, cooking_for_attacker=cooking_for_attacker)
 
         map = self.maps.closest(
             character=self.character.character,
@@ -310,6 +342,8 @@ for {price * quantity} gold ({price} for 1)..."
             self.character.character.get_resource_quantity(code=item.code)
             < original_quantity
         ):
+            if self.cooking and not cooking_for_attacker:
+                return
             self.character.move(target=map)
             crafted = self.character.craft(code=item.code)
             if crafted:

@@ -61,3 +61,5 @@ cooker = Cooker(
     secondary_skills=["woodcutting", "mining"],
     attacker=attacker,
 )
+
+attacker._set_cooker(cooker=cooker)

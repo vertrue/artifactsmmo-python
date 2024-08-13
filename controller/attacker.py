@@ -71,6 +71,11 @@ class Attacker:
         self.action = None
         self.iter = 0
 
+        self.final_boss = self.monsters.get(code="lich")
+
+    def _set_cooker(self, cooker):
+        self.cooker = cooker
+
     def pre_run(self):
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
@@ -93,6 +98,9 @@ class Attacker:
         if self.iter % 30 == 0:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
+
+        if self.character.character.level == 30 and not self.is_crafter and self.can_beat_final_boss:
+            self.kill(monster=self.final_boss)
 
         if self.map.has_events:
             event = self.character.character.find_best_event(
@@ -212,22 +220,40 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
 
-    def check_better_equipment(self, monster: Monster):
+    def kill(self, monster: Monster):
+        self.check_better_equipment(monster=monster, final_boss=True)
+        print(f"{self.character.character.name} is killing {monster.code}...")
+        closest_monster = self.maps.closest(
+            character=self.character.character, content_code=monster.code
+        )
+
+        self.character.move(target=closest_monster)
+        self.character.fight()
+
+        self.character.unequip(slot="consumable1_slot")
+        self.character.move(target=self.bank_map)
+        self.character.deposit_all()
+
+    def check_better_equipment(self, monster: Monster, final_boss: bool = False):
         print(f"{self.character.character.name} is checking for better equipment...")
         _, picked_items = self.character.character.find_optimal_build(
-            monster=monster, items=self.items, bank=self.bank
+            monster=monster, items=self.items, bank=self.bank, final_boss=final_boss
         )
 
         for slot, item in picked_items.items():
             if slot == "rounds":
                 continue
+            quantity = 1
+            if "consumable" in slot:
+                quantity = self.bank.get_quantity(item_code=item.code, character_name=self.character.character.name)
+
             character_item = self.character.character.get_slot_item(
                 slot=slot, items=self.items
             )
             if character_item is None and item is not None:
                 print(f"{self.character.character.name} is equiping {item.code}...")
                 self.character.move(target=self.bank_map)
-                self.character.withdraw(code=item.code)
+                self.character.withdraw(code=item.code, quantity=quantity)
                 self.character.equip(code=item.code, slot=slot)
 
             if character_item is not None and item is not None:
@@ -235,7 +261,7 @@ class Attacker:
                     continue
                 print(f"{self.character.character.name} is equiping {item.code}...")
                 self.character.move(target=self.bank_map)
-                self.character.withdraw(code=item.code)
+                self.character.withdraw(code=item.code, quantity=quantity)
                 self.character.unequip(slot=slot)
                 self.character.equip(code=item.code, slot=slot)
                 self.character.deposit(code=character_item.code)
@@ -296,6 +322,21 @@ class Attacker:
             bank=self.bank,
         )
 
+        return can_beat
+
+    @property
+    def can_beat_final_boss(self):
+        can_beat, _ = self.character.character.find_optimal_build(
+            monster=self.final_boss,
+            items=self.items,
+            bank=self.bank,
+            final_boss=True
+        )
+        print(f"{self.character.character.name} can beat {self.final_boss.name} = {can_beat}")
+        if not can_beat and not self.cooker.cooking:
+            print(f"{self.character.character.name} commanding {self.cooker.character.character.name} to make food...")
+            self.cooker.cooking = True
+            self.cooker.cooking_quantity = 10
         return can_beat
 
     def do_event(self):

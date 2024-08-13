@@ -275,6 +275,9 @@ class Character:
             except AttributeError:
                 pass
 
+        if item.type == "consumable":
+            setattr(char, f"{item.type}1_slot", item.code)
+
         return char
 
     def can_beat_check(
@@ -282,6 +285,7 @@ class Character:
         monster: Monster,
         items: AllItems,
         picked_items: Dict[AnyStr, Item | int | bool | None],
+        picked_items_amount: Dict[AnyStr, int]
     ):
         character = copy(self)
         for slot, picked_item in picked_items.items():
@@ -303,9 +307,27 @@ class Character:
         players_hp = character.hp
         mobs_hp = monster.hp
 
+        try:
+            consumable1 = items.get_one(code=character.consumable1_slot)
+            consumable1_restore = consumable1.get_effect_value(effect_name="restore")
+        except Exception:
+            consumable1_restore = None
+
+        consumable1_used = 0
+
         for i in range(1, 101):
             if i % 2 == 1:
                 # player
+
+                # consumables
+                try:
+                    if (players_hp <= character.hp / 2) and consumable1_used < picked_items_amount[consumable1.code]:
+                        players_hp += consumable1_restore
+                        consumable1_used += 1
+                except Exception:
+                    pass
+
+                # attacks
                 player_attack = floor(
                     character.attack_air
                     * (1 + character.dmg_air / 100)
@@ -370,7 +392,7 @@ class Character:
         return False, i, players_hp, mobs_hp
 
     def find_optimal_build(
-        self, monster: Monster, items: AllItems, bank
+        self, monster: Monster, items: AllItems, bank, final_boss=False
     ) -> tuple[bool, Dict[AnyStr, Item | int | bool | None]]:
         slots = [
             "shield",
@@ -385,6 +407,10 @@ class Character:
             "artifact2",
             "artifact3",
         ]
+        if final_boss:
+            slots += [
+                "consumable1",
+            ]
 
         all_items = bank.get_all_items()
         bank_items_amount = {}
@@ -446,7 +472,10 @@ class Character:
 
                 if best_item:
                     try:
-                        picked_items_amount[best_item.code] += 1
+                        if best_item.type == "consumable":
+                            picked_items_amount[best_item.code] = bank_items_amount[best_item.code]
+                        else:
+                            picked_items_amount[best_item.code] += 1
                     except KeyError:
                         picked_items_amount[best_item.code] = 1
 
@@ -454,6 +483,7 @@ class Character:
                 monster=monster,
                 items=items,
                 picked_items=picked_items,
+                picked_items_amount=picked_items_amount
             )
             picked_items["rounds"] = rounds
 
@@ -472,7 +502,7 @@ class Character:
         attack_coof = 5
         dmg_coof = 3
         res_coof = 1
-        # TODO: hp
+        food_coof = 1
         score = 0
         for effect in item.effects:
             element = effect.name.split("_")[-1]
@@ -488,6 +518,9 @@ class Character:
             if "res_" in effect.name:
                 if getattr(monster, f"attack_{element}") > 0:
                     score += res_coof * effect.value
+
+            if "restore" in effect.name:
+                score += food_coof * effect.value
 
         return score
 
