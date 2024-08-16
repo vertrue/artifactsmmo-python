@@ -403,13 +403,13 @@ class Character:
             "ring1",
             "ring2",
             "amulet",
-            "artifact1",
-            "artifact2",
-            "artifact3",
         ]
         if final_boss:
             slots += [
                 "consumable1",
+                "artifact1",
+                "artifact2",
+                "artifact3",
             ]
 
         all_items = bank.get_all_items()
@@ -510,6 +510,7 @@ class Character:
         dmg_coof = 3
         res_coof = 1
         food_coof = 1
+        hp_coof = 1
         score = 0
         for effect in item.effects:
             element = effect.name.split("_")[-1]
@@ -528,6 +529,9 @@ class Character:
 
             if "restore" in effect.name:
                 score += food_coof * effect.value
+
+            if "hp" in effect.name:
+                score += hp_coof * effect.value
 
         return score
 
