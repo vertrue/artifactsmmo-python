@@ -104,7 +104,7 @@ class Attacker:
         if self.cooker:
             if not self.cooker.cooking:
                 if self.character.character.level == 30 and not self.is_crafter and self.can_beat_final_boss:
-                    self.kill(monster=self.final_boss)
+                    return self.kill_final_boss
 
         if self.map.has_events:
             event = self.character.character.find_best_event(
@@ -224,7 +224,8 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
 
-    def kill(self, monster: Monster):
+    def kill_final_boss(self):
+        monster = self.final_boss
         self.check_better_equipment(monster=monster, final_boss=True)
         print(f"{self.character.character.name} is killing {monster.code}...")
         closest_monster = self.maps.closest(
@@ -234,9 +235,7 @@ class Attacker:
         self.character.move(target=closest_monster)
         self.character.fight()
 
-        self.character.unequip(slot="consumable1_slot")
-        self.character.move(target=self.bank_map)
-        self.character.deposit_all()
+        self.iter += 1
 
     def check_better_equipment(self, monster: Monster, final_boss: bool = False):
         print(f"{self.character.character.name} is checking for better equipment...")
