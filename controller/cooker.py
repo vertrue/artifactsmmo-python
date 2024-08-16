@@ -125,8 +125,7 @@ class Cooker:
         quantity = (
             self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
-            )
-            - 5
+            ) - (5 if item.type != "resource" else 100)
         )
         quantity = min(50, quantity, self.character.character.inventory_max_items)
 
@@ -216,6 +215,8 @@ for {price * quantity} gold ({price} for 1)..."
                 ]:
                     return item
                 elif item.type == "ring" and bank_item.quantity > 10:
+                    return item
+                elif item.type in ["food", "resource"] and bank_item.quantity > 100:
                     return item
 
         return None
