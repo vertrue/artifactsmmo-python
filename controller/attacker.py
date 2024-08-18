@@ -103,7 +103,7 @@ class Attacker:
 
         if self.cooker:
             if not self.cooker.cooking:
-                if self.character.character.level == 30 and not self.is_crafter and self.can_beat_final_boss:
+                if self.character.character.level == 30 and self.can_beat_final_boss:
                     return self.kill_final_boss
 
         if self.map.has_events:

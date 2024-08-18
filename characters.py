@@ -63,3 +63,6 @@ cooker = Cooker(
 )
 
 attacker._set_cooker(cooker=cooker)
+gearcrafter.attacker_mode._set_cooker(cooker=cooker)
+weaponcrafter.attacker_mode._set_cooker(cooker=cooker)
+jewelrycrafter.attacker_mode._set_cooker(cooker=cooker)
