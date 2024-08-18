@@ -101,10 +101,11 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
 
-        if self.cooker:
+        if self.cooker and self.character.character.level == 30:
+            if self.can_beat_final_boss:
+                return self.kill_final_boss
             if not self.cooker.cooking:
-                if self.character.character.level == 30 and self.can_beat_final_boss:
-                    return self.kill_final_boss
+                return self.kill_final_boss
 
         if self.map.has_events:
             event = self.character.character.find_best_event(
