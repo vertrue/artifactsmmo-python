@@ -127,7 +127,10 @@ class Character:
                     item_2 = items.get_one(item_code_2)
                     return item_1 if item_1.level < item_2.level else item_2
                 except AttributeError:
-                    return None
+                    if item_1:
+                        return item_1
+                    else:
+                        return None
             elif slot == "artifact":
                 try:
                     item_code_1 = eval(f"self.{slot}1_slot")
@@ -144,7 +147,10 @@ class Character:
                         return item_1
                     return item_1
                 except AttributeError:
-                    return None
+                    if item_1:
+                        return item_1
+                    else:
+                        return None
 
     def get_resource_quantity(self, code: AnyStr):
         for item in self.inventory:
