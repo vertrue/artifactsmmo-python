@@ -24,7 +24,7 @@ class Character:
     level: int
     xp: int
     max_xp: int
-    total_xp: int
+    achievements_points: int
     gold: int
     speed: int
     mining_level: int

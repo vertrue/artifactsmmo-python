@@ -46,7 +46,7 @@ class BankAPI(BaseAPI):
 
         code, response = self.get(method="/my/bank/items", params=params)
 
-        if code == 404:
+        if not response["data"]:
             return 0
 
         total_reserve = 0
@@ -59,8 +59,8 @@ class BankAPI(BaseAPI):
         return max(response["data"][0]["quantity"] - total_reserve, 0)
 
     def get_gold(self):
-        code, response = self.get(method="/my/bank/gold")
-        return response["data"]["quantity"]
+        code, response = self.get(method="/my/bank")
+        return response["data"]["gold"]
 
     def get_ge_sell_price(self, item: Item):
         code, response = self.get(method=f"/ge/{item.code}")
