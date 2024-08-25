@@ -39,20 +39,20 @@ def run_cooker():
 
 
 if __name__ == "__main__":
-    # attacker_thread = threading.Thread(target=run_attacker)
+    attacker_thread = threading.Thread(target=run_attacker)
     weaponcrafter_thread = threading.Thread(target=run_weaponcrafter)
     gearcrafter_thread = threading.Thread(target=run_gearcrafter)
     jewelrycrafter_thread = threading.Thread(target=run_jewelrycrafter)
-    # cooker_thread = threading.Thread(target=run_cooker)
+    cooker_thread = threading.Thread(target=run_cooker)
 
-    # attacker_thread.start()
+    attacker_thread.start()
     weaponcrafter_thread.start()
     gearcrafter_thread.start()
     jewelrycrafter_thread.start()
-    # cooker_thread.start()
+    cooker_thread.start()
 
-    # attacker_thread.join()
+    attacker_thread.join()
     weaponcrafter_thread.join()
     gearcrafter_thread.join()
     jewelrycrafter_thread.join()
-    # cooker_thread.join()
+    cooker_thread.join()
