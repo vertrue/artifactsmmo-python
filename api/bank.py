@@ -83,8 +83,11 @@ class BankAPI(BaseAPI):
         return AllBankItems(items=all_data)
 
     def has_item(self, item: Item) -> bool:
-        code, _ = self.get(method="/my/bank/items", params={"item_code": item.code})
-        return code == 200
+        code, response = self.get(method="/my/bank/items", params={"item_code": item.code})
+        if not response["data"]:
+            return False
+        else:
+            return True
 
     def get_tool(self, skill: AnyStr, items: AllItems) -> Item | None:
         all_data = self.get_all(method="/my/bank/items")
