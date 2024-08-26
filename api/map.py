@@ -24,4 +24,8 @@ class MapAPI(BaseAPI):
     @property
     def has_events(self) -> bool:
         events = self.get_event_maps()
-        return len(events.maps) > 0
+        has_monster_event = False
+        for event in events.maps:
+            if event.content.type == "monster":
+                has_monster_event = True
+        return has_monster_event
