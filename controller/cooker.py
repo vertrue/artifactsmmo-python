@@ -125,12 +125,12 @@ class Cooker:
     def sell(self):
         item = self.find_sell()
         print(f"{self.character.character.name} is selling")
-        max_quantity = self.bank.get_ge_sell_quantity(item=item)
 
         if item.code == "tasks_coin":
             self.exchange_task_coin()
             return
 
+        max_quantity = self.bank.get_ge_sell_quantity(item=item)
         if item.subtype == "food":
             quantity = self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
