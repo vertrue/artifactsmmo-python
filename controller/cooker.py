@@ -69,12 +69,18 @@ class Cooker:
     def pick_action(self):
         if self.cooking:
             return self.cook
-        item_to_buy = self.find_buy()
-        if item_to_buy:
-            return self.buy
+
+        if self.can_buy_expansion:
+            return self.buy_expansion
+
         item_to_sell = self.find_sell()
         if item_to_sell:
             return self.sell
+
+        item_to_buy = self.find_buy()
+        if item_to_buy:
+            return self.buy
+
         else:
             return self.farm_xp
 
@@ -119,15 +125,23 @@ class Cooker:
     def sell(self):
         item = self.find_sell()
         print(f"{self.character.character.name} is selling")
+        max_quantity = self.bank.get_ge_sell_quantity(item=item)
+
         if item.code == "tasks_coin":
             self.exchange_task_coin()
             return
-        quantity = (
-            self.bank.get_quantity(
+
+        if item.subtype == "food":
+            quantity = self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
-            ) - (5 if item.type != "resource" else 100)
-        )
-        quantity = min(50, quantity, self.character.character.inventory_max_items)
+            )
+        else:
+            quantity = (
+                self.bank.get_quantity(
+                    item_code=item.code, character_name=self.character.character.name
+                ) - (5 if item.type != "resource" else 100)
+            )
+        quantity = min(max_quantity, quantity, self.character.character.inventory_max_items)
 
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
@@ -149,6 +163,14 @@ for {price * quantity} gold ({price} for 1)..."
         )
         self.character.move(target=ge_map)
         self.character.sell(code=item.code, quantity=quantity, price=price)
+
+    def buy_expansion(self):
+        expansion_cost = self.bank.get_bank_expansion_price()
+
+        self.character.move(target=self.bank_map)
+        self.character.withdraw_gold(quantity=expansion_cost)
+
+        self.character.buy_bank_expansion()
 
     def buy(self):
         item = self.find_buy()
@@ -201,7 +223,11 @@ for {price * quantity} gold ({price} for 1)..."
 
         for bank_item in bank_items.items:
             item = self.items.get_one(code=bank_item.code)
+
             if item.code == "tasks_coin" and bank_item.quantity >= 3:
+                return item
+
+            if item.subtype == "food":
                 return item
 
             if bank_item.quantity > 5:
@@ -216,7 +242,7 @@ for {price * quantity} gold ({price} for 1)..."
                     return item
                 elif item.type == "ring" and bank_item.quantity > 10:
                     return item
-                elif item.type in ["food", "resource"] and bank_item.quantity > 100:
+                elif item.type == "resource" and bank_item.quantity > 100:
                     return item
 
         return None
@@ -411,3 +437,11 @@ for {price * quantity} gold ({price} for 1)..."
                         absent[key] = value * quantity
 
         return absent
+
+    @property
+    def can_buy_expansion(self):
+        bank_gold = self.bank.get_gold()
+        expansion_cost = self.bank.get_bank_expansion_price()
+
+        print(f"{self.character.character.name} can buy bank expansion: {bank_gold >= expansion_cost}")
+        return bank_gold >= expansion_cost

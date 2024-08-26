@@ -62,9 +62,17 @@ class BankAPI(BaseAPI):
         code, response = self.get(method="/my/bank")
         return response["data"]["gold"]
 
+    def get_bank_expansion_price(self):
+        _, response = self.get(method="/my/bank")
+        return response["data"]["next_expansion_cost"]
+
     def get_ge_sell_price(self, item: Item):
         code, response = self.get(method=f"/ge/{item.code}")
         return response["data"]["sell_price"]
+
+    def get_ge_sell_quantity(self, item: Item):
+        code, response = self.get(method=f"/ge/{item.code}")
+        return response["data"]["max_quantity"]
 
     def get_ge_buy_price(self, item: Item):
         code, response = self.get(method=f"/ge/{item.code}")

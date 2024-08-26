@@ -156,6 +156,15 @@ class MyCharacterAPI(MapAPI):
 
         self._update_character()
 
+    def buy_bank_expansion(self):
+        method = f"/my/{self.character.name}/action/bank/buy_expansion"
+
+        response_code, response_data = self.post(
+            method=method
+        )
+
+        self._update_character()
+
     def _update_character(self) -> None:
         method = f"/characters/{self.character.name}"
         code, response = self.get(method=method)
