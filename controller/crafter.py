@@ -130,7 +130,8 @@ class Crafter:
             self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
             )
-            > 1
+            > 1 and
+            not self.bank.needs_expansion
         ):
             print(f"{self.character.character.name} is recycling {item.name}...")
             self.character.move(target=self.bank_map)

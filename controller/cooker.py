@@ -77,9 +77,10 @@ class Cooker:
         if item_to_sell:
             return self.sell
 
-        item_to_buy = self.find_buy()
-        if item_to_buy:
-            return self.buy
+        if not self.bank.needs_expansion:
+            item_to_buy = self.find_buy()
+            if item_to_buy:
+                return self.buy
 
         else:
             return self.farm_xp
@@ -139,7 +140,7 @@ class Cooker:
             quantity = (
                 self.bank.get_quantity(
                     item_code=item.code, character_name=self.character.character.name
-                ) - (5 if item.type != "resource" else 100)
+                ) - ((1 if self.bank.needs_expansion else 5) if item.type != "resource" else 100)
             )
         quantity = min(max_quantity, quantity, self.character.character.inventory_max_items)
 
@@ -224,13 +225,16 @@ for {price * quantity} gold ({price} for 1)..."
         for bank_item in bank_items.items:
             item = self.items.get_one(code=bank_item.code)
 
+            if self.bank.get_ge_sell_quantity(item=item) == 0:
+                continue
+
             if item.code == "tasks_coin" and bank_item.quantity >= 3:
                 return item
 
             if item.subtype == "food":
                 return item
 
-            if bank_item.quantity > 5:
+            if bank_item.quantity > (1 if self.bank.needs_expansion else 5):
                 if item.type not in [
                     "resource",
                     "currency",

@@ -66,13 +66,31 @@ class BankAPI(BaseAPI):
         _, response = self.get(method="/my/bank")
         return response["data"]["next_expansion_cost"]
 
+    def get_bank_slots(self):
+        _, response = self.get(method="/my/bank/items")
+        return len(response["data"])
+
+    def get_bank_max_slots(self):
+        _, response = self.get(method="/my/bank")
+        return response["data"]["slots"]
+
+    @property
+    def needs_expansion(self):
+        bank_slots = self.get_bank_slots()
+        max_slots = self.get_bank_max_slots()
+
+        return bank_slots / max_slots >= 2 / 3
+
     def get_ge_sell_price(self, item: Item):
         code, response = self.get(method=f"/ge/{item.code}")
         return response["data"]["sell_price"]
 
     def get_ge_sell_quantity(self, item: Item):
         code, response = self.get(method=f"/ge/{item.code}")
-        return response["data"]["max_quantity"]
+        if code == 200:
+            return response["data"]["max_quantity"]
+        else:
+            return 0
 
     def get_ge_buy_price(self, item: Item):
         code, response = self.get(method=f"/ge/{item.code}")
