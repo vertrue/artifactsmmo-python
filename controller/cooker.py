@@ -82,8 +82,7 @@ class Cooker:
             if item_to_buy:
                 return self.buy
 
-        else:
-            return self.farm_xp
+        return self.farm_xp
 
     def farm_xp(self):
         print(f"{self.character.character.name} is farming xp...")
