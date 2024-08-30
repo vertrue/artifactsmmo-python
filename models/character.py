@@ -689,10 +689,12 @@ class Character:
                     best_item = item
                     best_time = item_time
 
-        if best_item:
+        try:
             self.best_xp_item = best_item
             self.best_xp_item_ch_level = self.get_skill_level(skill=skill)
             self.best_xp_item_time = best_time
+        except UnboundLocalError:
+            return None
 
         return best_item
 
