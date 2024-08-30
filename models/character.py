@@ -610,7 +610,7 @@ class Character:
         resources: AllResources,
         bank,
     ) -> Item:
-        filtered_items = items.filter(craft_skill=skill, min_level=(getattr(self, f"{skill}_level") - 9))
+        filtered_items = items.filter(craft_skill=skill, min_level=(getattr(self, f"{skill}_level") - 14))
         bank_items: AllBankItems = bank.get_all_items()
 
         def key(el: Item):
