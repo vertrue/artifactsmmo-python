@@ -610,7 +610,7 @@ class Character:
         resources: AllResources,
         bank,
     ) -> Item:
-        filtered_items = items.filter(craft_skill=skill, min_level=(getattr(self, f"{skill}_level") - 14))
+        filtered_items = items.filter(craft_skill=skill, min_level=(getattr(self, f"{skill}_level") - 10))
         bank_items: AllBankItems = bank.get_all_items()
 
         def key(el: Item):
@@ -689,9 +689,10 @@ class Character:
                     best_item = item
                     best_time = item_time
 
-        self.best_xp_item = best_item
-        self.best_xp_item_ch_level = self.get_skill_level(skill=skill)
-        self.best_xp_item_time = best_time
+        if best_item:
+            self.best_xp_item = best_item
+            self.best_xp_item_ch_level = self.get_skill_level(skill=skill)
+            self.best_xp_item_time = best_time
 
         return best_item
 

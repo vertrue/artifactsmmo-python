@@ -101,7 +101,7 @@ class Attacker:
             self.character.move(target=self.bank_map)
             self.character.deposit_all()
 
-        if self.cooker and self.character.character.level == 30:
+        if self.cooker and self.character.character.level == 35:
             if self.can_beat_final_boss:
                 return self.kill_final_boss
             if not self.cooker.cooking:
@@ -123,7 +123,7 @@ class Attacker:
         elif not self.is_crafter or crafter_max_level:
             if self.can_complete_task and self.has_task:
                 return self.do_task
-            elif self.character.character.level != 30:
+            elif self.character.character.level != 35:
                 return self.farm_xp
             else:
                 return self.kill_all
@@ -330,6 +330,8 @@ class Attacker:
 
     @property
     def can_beat_final_boss(self):
+        # TODO: fix later
+        return False
         can_beat, _ = self.character.character.find_optimal_build(
             monster=self.final_boss,
             items=self.items,

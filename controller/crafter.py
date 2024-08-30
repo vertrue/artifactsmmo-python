@@ -126,6 +126,9 @@ class Crafter:
             monsters=self.monsters,
             bank=self.bank,
         )
+        if not item:
+            self.attacker_mode.farm_xp()
+
         if (
             self.bank.get_quantity(
                 item_code=item.code, character_name=self.character.character.name
