@@ -67,8 +67,17 @@ class BankAPI(BaseAPI):
         return response["data"]["next_expansion_cost"]
 
     def get_bank_slots(self):
-        _, response = self.get(method="/my/bank/items")
-        return len(response["data"])
+        total_slots = 0
+        for page in range(1, 5):
+            _, response = self.get(
+                method="/my/bank/items",
+                params={"page": page, "size": 100}
+            )
+            if "data" in response and isinstance(response["data"], list):
+                total_slots += len(response["data"])
+            if len(response["data"]) < 100:
+                break
+        return total_slots
 
     def get_bank_max_slots(self):
         _, response = self.get(method="/my/bank")
