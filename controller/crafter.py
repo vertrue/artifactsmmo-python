@@ -76,7 +76,7 @@ class Crafter:
             return self.attacker_mode.pick_action()
 
         skill_level = getattr(self.character.character, f"{self.craft_skill}_level")
-        while skill_level > self.character.character.mining_level:
+        while skill_level // 5 != self.character.character.mining_level // 5:
             if self.character.character.mining_level < 10:
                 self._craft(self.items.get_one(code="copper"), 10)
             elif 10 <= self.character.character.mining_level < 20:
