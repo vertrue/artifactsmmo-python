@@ -121,9 +121,12 @@ class Attacker:
         if self.has_farm_resources:
             return self.farm_resource
         elif not self.is_crafter or crafter_max_level:
+            best_monster = self.character.character.find_best_monster(
+                monsters=self.monsters, items=self.items, maps=self.maps, bank=self.bank
+            )
             if self.can_complete_task and self.has_task:
                 return self.do_task
-            elif self.character.character.level != 35:
+            elif self.character.character.level != 35 and (self.character.character.level - best_monster.level) < 11:
                 return self.farm_xp
             else:
                 return self.kill_all

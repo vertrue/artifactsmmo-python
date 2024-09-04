@@ -96,6 +96,11 @@ class Cooker:
             for item in secondary_items:
                 if self.cooking:
                     return
+                bank_quantity = self.bank.get_quantity(
+                    item_code=item.code, character_name=self.character.character.name
+                )
+                if bank_quantity > 30:
+                    continue
                 self._craft(item=item, quantity=3)
                 self.character.move(target=self.bank_map)
                 self.character.deposit_all()
