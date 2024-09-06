@@ -128,6 +128,13 @@ class MyCharacterAPI(MapAPI):
         response_code, response_data = self.post(method=method)
 
         self._update_character()
+    
+    def cancel_task(self):
+        method = f"/my/{self.character.name}/action/task/cancel"
+
+        response_code, response_data = self.post(method=method)
+
+        self._update_character()
 
     def sell(self, code: AnyStr, quantity: int, price: int):
         method = f"/my/{self.character.name}/action/ge/sell"
