@@ -75,30 +75,30 @@ class Crafter:
         if self.wait_for_attacker:
             return self.attacker_mode.pick_action()
 
-        skill_level = getattr(self.character.character, f"{self.craft_skill}_level")
-        while skill_level // 5 != self.character.character.mining_level // 5:
-            if self.character.character.mining_level < 10:
-                self._craft(self.items.get_one(code="copper"), 10)
-            elif 10 <= self.character.character.mining_level < 20:
-                self._craft(self.items.get_one(code="iron"), 10)
-            elif 20 <= self.character.character.mining_level < 30:
-                self._craft(self.items.get_one(code="steel"), 10)
-            elif 30 <= self.character.character.mining_level:
-                self._craft(self.items.get_one(code="gold"), 10)
-            self.character.move(target=self.bank_map)
-            self.character.deposit_all()
+        # skill_level = getattr(self.character.character, f"{self.craft_skill}_level")
+        # while skill_level // 5 != self.character.character.mining_level // 5:
+        #     if self.character.character.mining_level < 10:
+        #         self._craft(self.items.get_one(code="copper"), 10)
+        #     elif 10 <= self.character.character.mining_level < 20:
+        #         self._craft(self.items.get_one(code="iron"), 10)
+        #     elif 20 <= self.character.character.mining_level < 30:
+        #         self._craft(self.items.get_one(code="steel"), 10)
+        #     elif 30 <= self.character.character.mining_level:
+        #         self._craft(self.items.get_one(code="gold"), 10)
+        #     self.character.move(target=self.bank_map)
+        #     self.character.deposit_all()
 
-        while skill_level > self.character.character.woodcutting_level:
-            if self.character.character.woodcutting_level < 10:
-                self._craft(self.items.get_one(code="ash_plank"), 10)
-            elif 10 <= self.character.character.woodcutting_level < 20:
-                self._craft(self.items.get_one(code="spruce_plank"), 10)
-            elif 20 <= self.character.character.woodcutting_level < 30:
-                self._craft(self.items.get_one(code="hardwood_plank"), 10)
-            elif 30 <= self.character.character.woodcutting_level:
-                self._craft(self.items.get_one(code="deadwood_plank"), 10)
-            self.character.move(target=self.bank_map)
-            self.character.deposit_all()
+        # while skill_level > self.character.character.woodcutting_level:
+        #     if self.character.character.woodcutting_level < 10:
+        #         self._craft(self.items.get_one(code="ash_plank"), 10)
+        #     elif 10 <= self.character.character.woodcutting_level < 20:
+        #         self._craft(self.items.get_one(code="spruce_plank"), 10)
+        #     elif 20 <= self.character.character.woodcutting_level < 30:
+        #         self._craft(self.items.get_one(code="hardwood_plank"), 10)
+        #     elif 30 <= self.character.character.woodcutting_level:
+        #         self._craft(self.items.get_one(code="deadwood_plank"), 10)
+        #     self.character.move(target=self.bank_map)
+        #     self.character.deposit_all()
 
         item_for_attacker = self.character.character.find_unique_craft(
             skill=self.craft_skill,

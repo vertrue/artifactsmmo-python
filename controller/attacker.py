@@ -104,8 +104,8 @@ class Attacker:
         if self.cooker and self.character.character.level == 35:
             if self.can_beat_final_boss:
                 return self.kill_final_boss
-            if not self.cooker.cooking:
-                return self.kill_final_boss
+            #if not self.cooker.cooking:
+                #return self.kill_final_boss
 
         if self.map.has_events:
             event = self.character.character.find_best_event(
@@ -128,6 +128,8 @@ class Attacker:
                 return self.do_task
             elif self.character.character.level != 35 and (self.character.character.level - best_monster.level) < 11:
                 return self.farm_xp
+            elif self.character.character.level == 35:
+                return self.change_task
             else:
                 return self.kill_all
         else:
@@ -313,6 +315,19 @@ class Attacker:
         self.character.move(target=self.bank_map)
         self.character.deposit_all()
 
+    def change_task(self):
+        print(f"{self.character.character.name} need to change task...")
+        task_map = self.maps.closest(
+            character=self.character.character, content_type="tasks_master"
+        )
+        self.character.move(target=self.bank_map)
+        self.character.withdraw(code="tasks_coin")
+        self.character.move(target=task_map)
+        self.character.cancel_task()
+        self.character.accept_task()
+        self.character.move(target=self.bank_map)
+        self.character.deposit_all()
+
     @property
     def has_farm_resources(self):
         return self.farm_queue.resources is not None
@@ -333,8 +348,6 @@ class Attacker:
 
     @property
     def can_beat_final_boss(self):
-        # TODO: fix later
-        return False
         can_beat, _ = self.character.character.find_optimal_build(
             monster=self.final_boss,
             items=self.items,
