@@ -51,11 +51,11 @@ class MyCharacterAPI(MapAPI):
 
         return response_code == 200
 
-    def equip(self, code: AnyStr, slot: AnyStr) -> bool:
+    def equip(self, code: AnyStr, slot: AnyStr, quantity: int = 1) -> bool:
         method = f"/my/{self.character.name}/action/equip"
 
         response_code, response_data = self.post(
-            method=method, body={"slot": slot, "code": code}
+            method=method, body={"slot": slot, "code": code, "quantity": quantity}
         )
 
         self._update_character()

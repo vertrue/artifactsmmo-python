@@ -63,7 +63,7 @@ class Cooker:
             except Exception as e:
                 print(e)
                 print(traceback.format_exc())
-                sleep(60)
+                sleep(5)
                 self.reset()
 
     def pick_action(self):

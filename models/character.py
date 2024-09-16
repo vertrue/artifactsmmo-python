@@ -413,6 +413,7 @@ class Character:
         if final_boss:
             slots += [
                 "consumable1",
+                "consumable2",
                 "artifact1",
             ]
 

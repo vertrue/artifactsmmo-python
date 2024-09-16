@@ -93,7 +93,7 @@ class Attacker:
             except Exception as e:
                 print(e)
                 print(traceback.format_exc())
-                sleep(60)
+                sleep(5)
                 self.reset()
 
     def pick_action(self, crafter_max_level=False):
@@ -263,7 +263,7 @@ class Attacker:
                 print(f"{self.character.character.name} is equiping {item.code}...")
                 self.character.move(target=self.bank_map)
                 self.character.withdraw(code=item.code, quantity=quantity)
-                self.character.equip(code=item.code, slot=slot)
+                self.character.equip(code=item.code, slot=slot, quantity=quantity)
 
             if character_item is not None and item is not None:
                 if character_item == item and item.type != "consumable":
@@ -272,7 +272,7 @@ class Attacker:
                 self.character.move(target=self.bank_map)
                 self.character.withdraw(code=item.code, quantity=quantity)
                 self.character.unequip(slot=slot)
-                self.character.equip(code=item.code, slot=slot)
+                self.character.equip(code=item.code, slot=slot, quantity=quantity)
                 self.character.deposit(code=character_item.code)
 
     def accept_task(self):
@@ -300,9 +300,20 @@ class Attacker:
             content_code=self.character.character.task,
         )
         self.character.move(target=monster_map)
-        self.character.fight()
 
-        self.iter += 1
+        for _ in range(self.character.character.task_total - self.character.character.task_progress) :
+            self.character.fight()
+            self.iter += 1
+            if self.map.has_events:
+                event = self.character.character.find_best_event(
+                    map=self.map, monsters=self.monsters, items=self.items, bank=self.bank
+                )
+
+                if event:
+                    break
+            
+            if self.can_beat_final_boss:
+                break
 
     def complete_task(self):
         print(f"{self.character.character.name} has completed task...")
