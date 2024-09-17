@@ -415,6 +415,8 @@ class Character:
                 "consumable1",
                 "consumable2",
                 "artifact1",
+                "artifact2",
+                "artifact3",
             ]
 
         all_items = bank.get_all_items()
